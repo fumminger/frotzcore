@@ -2,8 +2,7 @@
   
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
-    <LangVersion>9</LangVersion>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <PublishReadyToRun>true</PublishReadyToRun>
     <!--<PublishSingleFile>true</PublishSingleFile>
@@ -16,7 +15,7 @@
   
   <ItemGroup>
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
-    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0-rc.2.21480.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ColorPickerLib\ColorPicker.csproj" />

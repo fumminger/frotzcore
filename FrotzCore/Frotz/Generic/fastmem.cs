@@ -35,7 +35,7 @@ using zword = System.UInt16;
 
 namespace Frotz.Generic
 {
-    internal readonly struct RecordStruct
+    internal record RecordStruct
     {
         public readonly Story StoryId;
         public readonly zword Release;
