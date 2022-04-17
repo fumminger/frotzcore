@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FrotzCoreConsole": {
+      "commandName": "Project",
+      "workingDirectory": "F:\\Source\\frotzcore"
+    }
+  }
+}

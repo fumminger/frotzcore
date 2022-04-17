@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29021.104
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrotzCore", "FrotzCore\FrotzCore.csproj", "{A843C6B0-CFF3-4A69-87BC-C93608235E47}"
 EndProject
@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorPicker", "ColorPickerLib\ColorPicker.csproj", "{99E90579-62FC-4898-B168-24F7DBD3A34D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrotzCoreConsole", "FrotzCoreConsole\FrotzCoreConsole.csproj", "{F80BE985-37F4-4C89-9378-40B9A7D7EB53}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +64,18 @@ Global
 		{99E90579-62FC-4898-B168-24F7DBD3A34D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{99E90579-62FC-4898-B168-24F7DBD3A34D}.Release|x86.ActiveCfg = Release|Any CPU
 		{99E90579-62FC-4898-B168-24F7DBD3A34D}.Release|x86.Build.0 = Release|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Debug|x86.Build.0 = Debug|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Release|x86.ActiveCfg = Release|Any CPU
+		{F80BE985-37F4-4C89-9378-40B9A7D7EB53}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

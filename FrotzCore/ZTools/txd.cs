@@ -896,7 +896,7 @@ public static class Txd
                 switch (code)
                 {
                     case 0x00: return DecodeOperands("RTRUE", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.RETURN);
-                    case 0x01: return DecodeOperands("RFALSE", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.RETURN);
+                    case 0x01: return DecodeOperands("Rfalse", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.RETURN);
                     case 0x02: return DecodeOperands("PRINT", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.TEXT, TxH.PLAIN);
                     case 0x03: return DecodeOperands("PRINT_RET", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.TEXT, TxH.RETURN);
                     case 0x04: return DecodeOperands("NOP", TxH.NIL, TxH.NIL, TxH.NIL, TxH.NIL, TxH.NONE, TxH.PLAIN);

@@ -112,7 +112,7 @@ internal static class Quetzal
         return true;
     }
 
-    /* Read one word from file; return TRUE if OK. */
+    /* Read one word from file; return true if OK. */
     private static bool TryReadWord(FileStream fs, out zword result)
     {
         Span<byte> buffer = stackalloc byte[2];
@@ -126,7 +126,7 @@ internal static class Quetzal
         return true;
     }
 
-    /* Read one long from file; return TRUE if OK. */
+    /* Read one long from file; return true if OK. */
     private static bool TryReadLong(FileStream fs, out zlong result)
     {
         Span<byte> buffer = stackalloc byte[4];
