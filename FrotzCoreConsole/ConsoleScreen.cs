@@ -51,7 +51,7 @@ internal class ConsoleScreen : IZScreen
 
     private int _cursorX = 0;
     private int _cursorY = 0;
-    private StringBuilder _inputText = null;
+    private StringBuilder? _inputText = null;
     public void SetCharsAndLines()
     {/*
         double height = ActualHeight;
@@ -156,15 +156,17 @@ internal class ConsoleScreen : IZScreen
     public string OpenExistingFile(string defaultName, string title, string filter)
     {
         Console.WriteLine("Enter filename:");
-        string filename = Console.ReadLine();
-
+        string? filename = Console.ReadLine();
+        if (filename == null)
+            return "";
         return filename;
     }
     public string OpenNewOrExistingFile(string defaultName, string title, string filter, string defaultExtension)
     {
         Console.WriteLine("Enter filename:");
         string filename = Console.ReadLine();
-
+        if (filename == null)
+            return "";
         return filename;
     }
 

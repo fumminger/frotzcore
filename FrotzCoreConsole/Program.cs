@@ -8,7 +8,6 @@ ReadOnlySpan<string> string_span = new ReadOnlySpan<string>(string_list);
 
 FrotzCoreConsole.ConsoleScreen consoleScreen = new ConsoleScreen();
 
-Frotz.OS.SetScreen(consoleScreen);
 Frotz.Generic.Main.MainFunc(string_span);
 
 

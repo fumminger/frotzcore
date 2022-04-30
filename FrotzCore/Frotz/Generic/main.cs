@@ -181,7 +181,7 @@ public static class Main
 
             FastMem.ZRestart();
 
-            OS.GameStarted(); // New function; Called to allow the screen to know info about the game
+//            OS.GameStarted(); // New function; Called to allow the screen to know info about the game
 
             Process.Interpret();
 

@@ -44,6 +44,18 @@ public static class CharCodes
     public const zword ZC_ARROW_RIGHT = 0x84;
     public const zword ZC_ARROW_MAX = 0x84;
     public const zword ZC_FKEY_MIN = 0x85;
+    public const zword ZC_FKEY_F1 = 0x85;
+    public const zword ZC_FKEY_F2 = 0x86;
+    public const zword ZC_FKEY_F3 = 0x87;
+    public const zword ZC_FKEY_F4 = 0x88;
+    public const zword ZC_FKEY_F5 = 0x89;
+    public const zword ZC_FKEY_F6 = 0x8a;
+    public const zword ZC_FKEY_F7 = 0x8b;
+    public const zword ZC_FKEY_F8 = 0x8c;
+    public const zword ZC_FKEY_F9 = 0x8d;
+    public const zword ZC_FKEY_F10 = 0x8e;
+    public const zword ZC_FKEY_F11 = 0x8f;
+    public const zword ZC_FKEY_F12 = 0x90;
     public const zword ZC_FKEY_MAX = 0x90;
     public const zword ZC_NUMPAD_MIN = 0x91;
     public const zword ZC_NUMPAD_MAX = 0x9a;
@@ -86,6 +98,7 @@ public static class ZStyles
     public const byte BOLDFACE_STYLE = 2;
     public const byte EMPHASIS_STYLE = 4;
     public const byte FIXED_WIDTH_STYLE = 8;
+    public const byte PICTURE_STYLE = 16;
 }
 
 public static class ZMachine
