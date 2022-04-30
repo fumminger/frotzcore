@@ -135,7 +135,7 @@ public static partial class OS
 
         dumb_init_input();
         dumb_init_output();
-//        dumb_init_pictures();
+        dumb_init_pictures();
     }
 
     /*

@@ -1,19 +1,31 @@
-﻿using Frotz.Generic;
-using Frotz.Other;
-using Frotz.Screen;
+﻿/*
+ * dinput.c - Dumb interface, input functions
+ *
+ * This file is ported from Frotz.
+ *
+ * Frotz is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Frotz is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ * Or visit http://www.fsf.org/
+ */
+ 
+using Frotz.Generic;
 using static Frotz.Constants.CharCodes;
 using static Frotz.Constants.FileTypes;
 using static Frotz.Constants.General;
 using static Frotz.Constants.ZMachine;
-using static Frotz.Constants.ZStyles;
-using Microsoft.IO;
-using System;
-using System.Buffers;
-using System.Buffers.Binary;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Text;
+
 
 namespace Frotz;
 
@@ -76,12 +88,8 @@ public static partial class OS
         INPUT_LINE_CONTINUED = 2,
     };
 
-    /* The time in tenths of seconds that the user is ahead of z time.  */
-    private static TimeSpan time_ahead = TimeSpan.Zero;
-
-
     /* get a character.  Exit with no fuss on EOF.  */
-    static int xgetchar()
+    static ushort xgetchar()
     {
         int c = System.Console.Read();
         if (c == -1) // EOF
@@ -112,8 +120,9 @@ public static partial class OS
             Fatal("End Of File");
 //#endif
         }
-        return c;
+        return (ushort) c;
     }
+
 
     /* Read one line, including the newline, into s.  Safely avoids buffer
      * overruns (but that's kind of pointless because there are several
@@ -124,7 +133,7 @@ public static partial class OS
         int p = 0;
         while (p < INPUT_BUFFER_SIZE - 1)
         {
-            if ((s[p++] = Convert.ToChar(xgetchar())) == '\n')
+            if ((s[p++] = xgetchar()) == '\n')
             {
                 s[p] = '\0';
                 return;
@@ -134,7 +143,7 @@ public static partial class OS
         s[p] = '\0';
         while ((c = xgetchar()) != '\n')
             ;
-        Console.Out.WriteLine("Line too long, truncated to {0}\n", s);
+        Console.Out.Write("Line too long, truncated to {0}\n", s);
     }
 
 
@@ -186,14 +195,18 @@ public static partial class OS
                         case '0': dest[di++] = ZC_FKEY_F10; break;
 //#endif
                         default:
-                            Console.Error.WriteLine("DUMB-FROTZ: unknown escape char: {0}\n", src[si-1]);
-                            Console.Error.WriteLine("Enter \\help to see the list\n");
+                            Console.Error.Write("DUMB-FROTZ: unknown escape char: {0}\n", src[si-1]);
+                            Console.Error.Write("Enter \\help to see the list\n");
                             break;
                     }
                     break;
             }
         dest[di] = '\0';
     }
+
+
+    /* The time in tenths of seconds that the user is ahead of z time.  */
+    private static TimeSpan time_ahead = TimeSpan.Zero;
 
     /* Called from os_read_key and os_read_line if they have input from
      * a previous call to dumb_read_line.
@@ -208,11 +221,13 @@ public static partial class OS
         return time_ahead != TimeSpan.Zero;
     }
 
+
     /* If val is '0' or '1', set *var accordingly, otherwise toggle it.  */
     private static void toggle(ref bool var, zword val)
     {
         var = (val == '1') || (val != '0' && !var);
     }
+
 
     /* Handle input-related user settings and call dumb_output_handle_setting.  */
     private static bool dumb_handle_setting(in zword[] zsetting, bool show_cursor, bool startup)
@@ -237,6 +252,7 @@ public static partial class OS
         }
         return true;
     }
+
 
     /* Read a line, processing commands (lines that start with a backslash
      * (that isn't the start of a special character)), and write the
@@ -265,17 +281,15 @@ public static partial class OS
                 Console.Out.Write(prompt);
             else
                 dumb_show_prompt(show_cursor,
-                    (timeout != TimeSpan.FromSeconds(0.0) ? "tTD" : ")>}")[(int) type]);
+                    (timeout != TimeSpan.Zero ? "tTD" : ")>}")[(int) type]);
 
             /* Prompt only shows up after user input if we don't flush stdout */
             Console.Out.Flush();
             dumb_getline(ref s);
-            if ((s[0] != '\\') || ((s[1] != '\0') && !Char.IsLower((char) s[1])))
-            {
+            if ((s[0] != '\\') || ((s[1] != '\0') && !Char.IsLower((char) s[1]))) {
                 /* Is not a command line.  */
                 translate_special_chars(ref s);
-                if (timeout < TimeSpan.Zero)
-                {
+                if (timeout != TimeSpan.Zero) {
                     TimeSpan elapsed = (DateTime.Now - start_time) * 10 * speed;
                     if (elapsed > timeout)
                     {
@@ -289,8 +303,8 @@ public static partial class OS
 
             /* Remove the \ and the terminating newline.  */
             // "command = s+1";
-            zword[] command = s;
-            command[command.Length - 1] = '\0';
+            zword[] command = ConvertToZWords(s.ToString().Substring(1));
+            command[strlen(command) - 1] = '\0';
 
             if (command.ToString() == "t")
             {
@@ -368,14 +382,16 @@ public static partial class OS
         }
     }
 
+
     /* Read a line that is not part of z-machine input (more prompts and
      * filename requests).  */
     static void dumb_read_misc_line(zword[] s, string prompt)
     {
         dumb_read_line(s, prompt, false, TimeSpan.Zero, 0, null);
         /* Remove terminating newline */
-        s[s.Length - 1] = '\0';
+        s[strlen(s) - 1] = '\0';
     }
+
 
     /* For allowing the user to input in a single line keys to be returned
      * for several consecutive calls to read_char, with no screen update
@@ -409,29 +425,27 @@ public static partial class OS
         /* Discard any keys read for line input.  */
         read_line_buffer[0] = '\0';
 
-        if (read_key_buffer[0] == '\0')
-        {
+        if (read_key_buffer[0] == '\0') {
             timed_out = dumb_read_line(read_key_buffer, null,
                 show_cursor, TimeSpan.FromSeconds(timeout), input_type.INPUT_CHAR, null);
             /* An empty input line is reported as a single CR.
              * If there's anything else in the line, we report
              * only the line's contents and not the terminating CR.  */
-            if (read_key_buffer.ToString().Length > 1)
-                read_key_buffer[read_key_buffer.ToString().Length-1] = '\0';
-        }
-        else
+            if (strlen(read_key_buffer) > 1)
+                read_key_buffer[strlen(read_key_buffer)-1] = '\0';
+        } else
             timed_out = check_timeout(TimeSpan.FromSeconds(timeout));
 
         if (timed_out)
             return ZC_TIME_OUT;
 
-//# ifndef USE_UTF8
+#if USE_UTF8 == false
         c = read_key_buffer[0];
-/*#else 
+#else 
         idx = utf8_to_zchar(&c, read_key_buffer, 0);
-#endif */
-        Array.Copy(read_key_buffer, 0, read_key_buffer, idx,
-            read_key_buffer.ToString().Length - idx + 1);
+#endif
+        Array.Copy(read_key_buffer, idx, read_key_buffer, 0,
+            strlen(read_key_buffer) - idx + 1);
 
         /* TODO: error messages for invalid special chars.  */
 
@@ -491,9 +505,9 @@ public static partial class OS
         zword terminator;
         // static bool timed_out_last_time;
         bool timed_out;
-/* # ifdef USE_UTF8
+#if USE_UTF8
         int i, j, len;
-#endif */
+#endif
 
         /* Discard any keys read for single key input.  */
         read_key_buffer[0] = '\0';
@@ -503,13 +517,11 @@ public static partial class OS
         if (timed_out_last_time && !continued)
             read_line_buffer[0] = '\0';
 
-        if (read_line_buffer[0] == '\0')
-        {
+        if (read_line_buffer[0] == '\0') {
             timed_out = dumb_read_line(read_line_buffer, null, true,
                 TimeSpan.FromSeconds(timeout), buf[0] != 0? input_type.INPUT_LINE_CONTINUED : input_type.INPUT_LINE,
                 buf.ToArray());
-        }
-        else
+        } else
             timed_out = check_timeout(TimeSpan.FromSeconds(timeout));
 
         if (timed_out)
@@ -535,9 +547,9 @@ public static partial class OS
         dumb_display_user_input(read_line_buffer);
 
         /* copy to the buffer and save the rest for next time.  */
-//# ifndef USE_UTF8
+#if USE_UTF8 == false
         strncat(ref buf, read_line_buffer, INPUT_BUFFER_SIZE - strlen(read_line_buffer) - 1);
-/*#else
+#else
         for (len = 0; ; len++)
         {
             if (!buf[len])
@@ -551,9 +563,9 @@ public static partial class OS
             j = utf8_to_zchar(&buf[i], read_line_buffer, j);
         }
         buf[i] = 0;
-#endif */
+#endif
         p = strlen(read_line_buffer) + 1;
-        Array.Copy(read_line_buffer, 0, read_line_buffer, p, INPUT_BUFFER_SIZE-p);
+        Array.Copy(read_line_buffer, p, read_line_buffer, 0, INPUT_BUFFER_SIZE -p);
 
         /* If there was just a newline after the terminating character,
          * don't save it.  */

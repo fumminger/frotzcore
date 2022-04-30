@@ -152,7 +152,7 @@ public static partial class OS
 
     public static (string FileName, MemoryOwner<byte> FileData)? SelectGameFile()
     {
-        Console.WriteLine("Enter filename:");
+        Console.Write("Enter filename:");
         string? filename = Console.ReadLine();
 
         MemoryOwner<byte>? buffer = null;
@@ -189,54 +189,6 @@ public static partial class OS
      *
      */
     public static void Menu(int action, int menu, zword[] text) => Fail("os_menu not yet handled");
-
-    /*
-     * os_peek_color
-     *
-     * Return the color of the screen unit below the cursor. (If the
-     * interface uses a text mode, it may return the background colour
-     * of the character at the cursor position instead.) This is used
-     * when text is printed on top of pictures. Note that this coulor
-     * need not be in the standard set of Z-machine colours. To handle
-     * this situation, Frotz entends the colour scheme: Colours above
-     * 15 (and below 256) may be used by the interface to refer to non
-     * standard colours. Of course, os_set_colour must be able to deal
-     * with these colours.
-     *
-     */
-    public static zword PeekColor()
-    {
-        return 0;
-    }
-
-    /*
-     * os_picture_data
-     *
-     * Return true if the given picture is available. If so, store the
-     * picture width and height in the appropriate variables. Picture
-     * number 0 is a special case: Write the highest legal picture number
-     * and the picture file release number into the height and width
-     * variables respectively when this picture number is asked for.
-     *
-     */
-    public static bool PictureData(int picture, out int height, out int width)
-    {
-        height = 0;
-        width = 0;
-        return false;
-    }
-
-    /*
-     * os_draw_picture
-     *
-     * Display a picture at the given coordinates.
-     *
-     */
-    public static void DrawPicture(int picture, int y, int x)
-    {
-    }
-
-
 
     /*
      * os_path_open
