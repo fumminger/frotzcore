@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ConsoleScreen.cs" />
     <Compile Remove="os_Dumb.cs" />
   </ItemGroup>
 
