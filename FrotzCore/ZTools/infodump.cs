@@ -86,7 +86,7 @@ public static class InfoDump
         int symbolic;
 
         /* Clear all options */
-        Array.Clear(options);
+        Array.Clear(options, 0, options.Length);
 
         columns = 0;
         symbolic = 0;

@@ -108,7 +108,6 @@ internal static class FastMem
     internal static void SetWord(int addr, zword v)
     {
         BinaryPrimitives.WriteUInt16BigEndian(ZMData.AsSpan(addr, 2), v);
-        DebugState.Output($"ZMP: {addr} -> {v}");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -131,7 +130,6 @@ internal static class FastMem
     internal static void SetByte(int addr, byte v)
     {
         ZMData[addr] = v;
-        DebugState.Output($"ZMP: {addr} -> {v}");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -304,8 +302,6 @@ internal static class FastMem
         StoryFp = OS.PathOpen(Main.StoryData);
         InitFpPos = StoryFp.Position;
 
-        DebugState.Output($"Starting story: {Main.StoryName}");
-
         /* Allocate memory for story header */
 
         ZMData = new byte[64];
@@ -462,8 +458,6 @@ internal static class FastMem
             }
         }
 
-        DebugState.Output($"Story Size: {Main.StorySize}");
-
         FirstRestart = true;
 
         /* Read header extension table */
@@ -552,7 +546,6 @@ internal static class FastMem
 
         SetByte(addr, value);
 
-        DebugState.Output($"storeb: {addr} -> {value}");
     }/* storeb */
 
     /*

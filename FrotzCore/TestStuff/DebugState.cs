@@ -1,7 +1,6 @@
 ﻿using Frotz.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 
 namespace Frotz;
 
@@ -31,35 +30,6 @@ public static class DebugState
     private static int CurrentState = 0;
 
     internal static string LastCallMade = "";
-
-    [Conditional("DEBUG")]
-    public static void Output(ref DefaultInterpolatedStringHandler handler) => Output(true, ref handler);
-
-    [Conditional("DEBUG")]
-    public static void Output(bool log, ref DefaultInterpolatedStringHandler handler)
-    {
-        if (IsActive)
-        {
-            string current = string.Create(CultureInfo.InvariantCulture, ref handler);
-
-            if (log && CurrentState < StateLines.Count && !current.StartsWith("#"))
-            {
-                string expected = StateLines[CurrentState++];
-
-                if (string.Compare(expected, current, StringComparison.OrdinalIgnoreCase) != 0)
-                {
-                    Debug.WriteLine("mismatch! Expected:{0}: Current:{1}:{2}", expected, current, CurrentState);
-                    StateLines.Clear();
-                }
-
-            }
-            else
-            {
-                OutputLines.Add(current);
-                Debug.WriteLine(current);
-            }
-        }
-    }
 
     public static void SaveZMachine(string fileToSaveTo)
     {

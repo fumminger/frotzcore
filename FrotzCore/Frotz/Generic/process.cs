@@ -174,7 +174,6 @@ internal static class Process
     private static void PrivateInvoke(ZInstruction instruction, string array, int index, int opcode)
     {
         DebugState.LastCallMade = instruction.Method.Name + ":" + opcode;
-        DebugState.Output(false, $"Invoking: {opcode:X} -> {instruction.Method.Name} -> {invokeCount}");
         instruction.Invoke();
         invokeCount++;
     }
@@ -232,8 +231,6 @@ internal static class Process
 
         zargs[zargc++] = value;
 
-        DebugState.Output($"  Storing operand: {zargc - 1} -> {value}");
-
     }/* load_operand */
 
     /*
@@ -274,8 +271,6 @@ internal static class Process
         do
         {
             FastMem.CodeByte(out zbyte opcode);
-
-            DebugState.Output($"CODE: {FastMem.Pcp - 1} -> {opcode:X}");
 
             if (Main.AbortGameLoop)
             {
@@ -353,8 +348,6 @@ internal static class Process
         Main.fp = Main.sp;
         Main.frame_count++;
 
-        DebugState.Output($"Added Frame: {Main.frame_count} -> {Main.Stack[Main.sp + 0]}:{Main.Stack[Main.sp + 1]}:{Main.Stack[Main.sp + 2]}:{Main.Stack[Main.sp + 3]}");
-
         /* Calculate byte address of routine */
 
         pc = Main.h_version switch
@@ -419,8 +412,6 @@ internal static class Process
             Err.RuntimeError(ErrorCodes.ERR_STK_UNDF);
 
         Main.sp = Main.fp;
-
-        DebugState.Output($"Removing Frame: {Main.frame_count}");
 
         ct = Main.Stack[Main.sp++] >> (Main.option_save_quetzal == true ? 12 : 8);
         Main.frame_count--;
@@ -512,18 +503,15 @@ internal static class Process
         if (variable == 0)
         {
             Main.Stack[--Main.sp] = value; // *--sp = value;
-            DebugState.Output($"  Storing {value} on stack at {Main.sp}");
         }
         else if (variable < 16)
         {
             Main.Stack[Main.fp - variable] = value;  // *(fp - variable) = value;
-            DebugState.Output($"  Storing {value} on stack as Variable {variable} at {Main.sp}");
         }
         else
         {
             zword addr = (zword)(Main.h_globals + 2 * (variable - 16));
             FastMem.SetWord(addr, value);
-            DebugState.Output($"  Storing {value} at {addr}");
         }
 
     }/* store */
