@@ -10,8 +10,15 @@
     <RootNamespace>Frotz</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="ZTools\**" />
+    <EmbeddedResource Remove="ZTools\**" />
+    <None Remove="ZTools\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="os_WPF.cs" />
-    <Compile Remove="ZTools\TxioInterpolatedStringHandler.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="FrotzCoreConsole.deps.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />

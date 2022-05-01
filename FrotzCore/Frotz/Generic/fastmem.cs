@@ -22,7 +22,6 @@
  * New undo mechanism added by Jim Dunleavy <jim.dunleavy@erha.ie>
  */
 
-using Microsoft.Toolkit.HighPerformance.Helpers;
 using System;
 using System.Buffers.Binary;
 using System.IO;
@@ -531,7 +530,7 @@ internal static class FastMem
             unchecked { Main.h_flags &= (zword)(~(ZMachine.SCRIPTING_FLAG | ZMachine.FIXED_FONT_FLAG)); }
             Main.h_flags |= (zword)(value & (ZMachine.SCRIPTING_FLAG | ZMachine.FIXED_FONT_FLAG));
 
-            if (BitHelper.HasFlag(value, ZMachine.SCRIPTING_FLAG))
+            if ((value & ZMachine.SCRIPTING_FLAG) != 0)
             {
                 if (!Main.ostream_script)
                     Files.ScriptOpen();

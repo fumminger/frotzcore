@@ -573,7 +573,7 @@ public static partial class OS
             if (startup)
                 return true;
             for (i = 0; i < screen_cells; i++)
-                screen_changes[i] = (screen_data[i].style == PICTURE_STYLE).ToByte();
+                screen_changes[i] = Convert.ToByte(screen_data[i].style == PICTURE_STYLE);
 	        dumb_show_screen(show_cursor);
         } else if (setting.ToString() == "vb") {
 	        toggle(ref visual_bell, setting[2]);
@@ -652,7 +652,7 @@ public static partial class OS
                 show_cell(make_cell(REVERSE_STYLE, DEFAULT_DUMB_COLOUR, DEFAULT_DUMB_COLOUR, p[j]));
             putchar('\n');
             for (i = 0; i < screen_cells; i++)
-                screen_changes[i] = (screen_data[i].style == REVERSE_STYLE).ToByte();
+                screen_changes[i] = Convert.ToByte(screen_data[i].style == REVERSE_STYLE);
             dumb_show_screen(show_cursor);
         }
         else if (setting.ToString() == "set")
