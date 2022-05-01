@@ -906,20 +906,13 @@ public static partial class OS
         }
         else
         {
-            if (OperatingSystem.IsWindows())
+            if (volume == 1)
             {
-                if (volume == 1)
-                {
-                    Console.Beep(800, 350);
-                }
-                else
-                {
-                    Console.Beep(392, 350);
-                }
+                Console.Beep(800, 350);
             }
             else
             {
-                putchar('\a'); /* so much for dumb.  */
+                Console.Beep(392, 350);
             }
         }
     }
