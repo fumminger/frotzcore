@@ -19,6 +19,7 @@
  */
 
 using Frotz.Other;
+using System;
 
 namespace Frotz.Generic;
 

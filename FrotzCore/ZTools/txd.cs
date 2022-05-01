@@ -56,6 +56,8 @@
 
 namespace ZTools;
 
+using System;
+using System.Collections.Generic;
 using zbyte_t = System.Byte;
 using zword_t = System.UInt16;
 

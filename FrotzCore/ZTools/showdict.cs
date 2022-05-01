@@ -3,6 +3,7 @@
  *
  * Dictionary and abbreviation table routines.
  */
+using System;
 
 namespace ZTools;
 

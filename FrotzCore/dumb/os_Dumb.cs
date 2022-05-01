@@ -1,17 +1,7 @@
-﻿using Frotz.Generic;
+﻿
 using Frotz.Other;
-using Frotz.Screen;
-using static Frotz.Constants.CharCodes;
-using static Frotz.Constants.General;
-using static Frotz.Constants.ZColor;
-using static Frotz.Constants.ZMachine;
-using static Frotz.Constants.ZStyles;
-using Microsoft.IO;
 using System;
-using System.Buffers;
-using System.Buffers.Binary;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 

@@ -6,6 +6,7 @@
  * Matthew T. Russotto 7 February 1998 russotto@pond.com
  *
  */
+using System;
 
 namespace ZTools;
 

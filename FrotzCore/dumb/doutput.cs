@@ -4,6 +4,7 @@ using static Frotz.Constants.CharCodes;
 using static Frotz.Constants.ZFont;
 using static Frotz.Constants.ZMachine;
 using static Frotz.Constants.ZStyles;
+using System;
 using System.Buffers;
 
 namespace Frotz;

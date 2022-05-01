@@ -3,6 +3,7 @@
  *
  * Object display routines.
  */
+using System;
 
 namespace ZTools;
 

@@ -1,4 +1,7 @@
-﻿namespace Frotz.Screen;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Frotz.Screen;
 
 public class ScreenLines : IDisposable
 {

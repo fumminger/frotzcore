@@ -1,4 +1,6 @@
-﻿namespace Frotz;
+﻿using System;
+
+namespace Frotz;
 
 public static class Utilities
 {

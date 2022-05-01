@@ -24,7 +24,9 @@ using static Frotz.Constants.CharCodes;
 using static Frotz.Constants.FileTypes;
 using static Frotz.Constants.General;
 using static Frotz.Constants.ZMachine;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 
 namespace Frotz;

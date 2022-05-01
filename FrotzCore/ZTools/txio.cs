@@ -5,9 +5,10 @@
  * Mark Howell 26 August 1992 howell_ma@movies.enet.dec.com
  *
  */
-
+using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.IO;
 
 namespace ZTools;
 

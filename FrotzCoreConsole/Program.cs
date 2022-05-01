@@ -1,4 +1,5 @@
-﻿using Frotz;
+﻿
+using System;
 
 Console.WriteLine("Begin Frotzing!");
 

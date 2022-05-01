@@ -5,8 +5,9 @@
  * Mark Howell 26 August 1992 howell_ma@movies.enet.dec.com
  *
  */
-
+using System;
 using System.Buffers.Binary;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ZTools;

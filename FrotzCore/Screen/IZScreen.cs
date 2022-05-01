@@ -1,5 +1,6 @@
 ﻿namespace Frotz.Screen;
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using zword = System.UInt16;
 

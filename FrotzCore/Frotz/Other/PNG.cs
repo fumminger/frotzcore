@@ -2,8 +2,11 @@
 
 namespace Frotz.Other;
 
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 public class PNGChunk

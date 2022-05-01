@@ -1,5 +1,6 @@
 ﻿namespace Frotz.Screen;
 
+using System;
 using System.Text;
 
 public sealed class ZKeyPressEventArgs : EventArgs

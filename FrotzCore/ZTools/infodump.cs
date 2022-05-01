@@ -50,6 +50,8 @@
  *    Add header extension table and Unicode table
  *    Add Inform and user symbol table support
  */
+using System;
+using System.Collections.Generic;
 
 namespace ZTools;
 

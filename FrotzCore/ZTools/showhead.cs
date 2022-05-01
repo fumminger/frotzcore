@@ -5,6 +5,7 @@
  *
  * Header display routines.
  */
+using System;
 
 namespace ZTools;
 

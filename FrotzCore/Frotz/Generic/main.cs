@@ -25,6 +25,7 @@
  *    s.jokisch@avu.de
  *
  */
+using System;
 
 namespace Frotz.Generic;
 

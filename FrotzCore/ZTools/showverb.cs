@@ -3,6 +3,7 @@
  *
  * Verb and grammar display routines.
  */
+using System;
 
 namespace ZTools;
 
