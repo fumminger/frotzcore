@@ -82,9 +82,9 @@ public class PNG
                 ? (pooled = ArrayPool<byte>.Shared.Rent(len))
                 : stackalloc byte[len];
             Encoding.UTF8.GetBytes(type, bytes);
-            buffer.CopyTo(bytes[4..]);
+            buffer.CopyTo(bytes.Slice(4));
 
-            return CRC.Calculate(bytes[..len]);
+            return CRC.Calculate(bytes.Slice(0,len));
         }
         finally
         {

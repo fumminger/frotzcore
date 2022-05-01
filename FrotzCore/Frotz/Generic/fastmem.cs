@@ -486,7 +486,7 @@ internal static class FastMem
         UndoMem.ForEach(x => x.Dispose());
         UndoMem.Clear();
 
-        ZMData.AsSpan(..Main.h_dynamic_size).CopyTo(PrevZmp.Span);
+        ZMData.AsSpan(0,Main.h_dynamic_size).CopyTo(PrevZmp.Span);
     }
 
     /// <summary>
@@ -584,7 +584,7 @@ internal static class FastMem
 
             StoryFp.Position = InitFpPos;
 
-            int read = StoryFp.Read(ZMData.AsSpan(..Main.h_dynamic_size));
+            int read = StoryFp.Read(ZMData.AsSpan(0,Main.h_dynamic_size));
             if (read != Main.h_dynamic_size)
             {
                 OS.Fatal("Story file read error");
@@ -940,9 +940,9 @@ internal static class FastMem
 
         /* undo possible */
 
-        var undo = UndoMem[^1];
+        var undo = UndoMem[UndoMem.Count-1];
 
-        ZMData.AsSpan(..Main.h_dynamic_size).CopyTo(PrevZmp.Span);
+        ZMData.AsSpan(0,Main.h_dynamic_size).CopyTo(PrevZmp.Span);
         SetPc(undo.Pc);
         Main.sp = undo.Sp;
         Main.fp = undo.FrameOffset;
@@ -1123,10 +1123,10 @@ internal static class FastMem
         GetPc(out long pc);
         // p.undo_data = undo_diff;
         var undoData = MemoryOwner<zbyte>.Allocate(diff_size);
-        UndoDiff.Span[..diff_size].CopyTo(undoData.Span);
+        UndoDiff.Span.Slice(0,diff_size).CopyTo(undoData.Span);
 
         var stack = MemoryOwner<zword>.Allocate(Main.Stack.Length - Main.sp);
-        Main.Stack.AsSpan(Main.sp..Main.Stack.Length).CopyTo(stack.Span);
+        Main.Stack.AsSpan(Main.sp,Main.Stack.Length-Main.sp).CopyTo(stack.Span);
 
         //    p->frame_offset = fp - stack;
         UndoMem.Add(new(pc, diff_size, Main.frame_count, (zword)stack_size,

@@ -5,9 +5,8 @@ namespace Frotz;
 
 public static class Extensions
 {
-    public static StringBuilder Remove(this StringBuilder sb, Range range)
+    public static StringBuilder Remove(this StringBuilder sb, int offset, int length)
     {
-        var (offset, length) = range.GetOffsetAndLength(sb.Length);
         return sb.Remove(offset, length);
     }
 

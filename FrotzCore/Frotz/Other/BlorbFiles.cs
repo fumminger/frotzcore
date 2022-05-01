@@ -90,8 +90,8 @@ public class BlorbReader
             : stackalloc byte[length];
         try
         {
-            int bytesRead = stream.Read(buffer[..length]);
-            buffer = buffer[..bytesRead];
+            int bytesRead = stream.Read(buffer.Slice(0,length));
+            buffer = buffer.Slice(0,bytesRead);
             if (chunks.ContainsKey(start - 8))
             {
                 var c = chunks[start - 8];
@@ -105,12 +105,12 @@ public class BlorbReader
                         break;
                     case BlorbUsage.Snd:
                         {
-                            if (buffer[..4].Matches(stackalloc char[] { 'A', 'I', 'F', 'F' }))
+                            if (buffer.Slice(0,4).Matches(stackalloc char[] { 'A', 'I', 'F', 'F' }))
                             {
                                 byte[] temp = new byte[buffer.Length + 8];
 
-                                General.FormBytes.CopyTo(temp.AsSpan(..4));
-                                BinaryPrimitives.WriteInt32BigEndian(temp.AsSpan(4..8), buffer.Length);
+                                General.FormBytes.CopyTo(temp.AsSpan().Slice(0,4));
+                                BinaryPrimitives.WriteInt32BigEndian(temp.AsSpan(4,8-4), buffer.Length);
                                 buffer.CopyTo(temp.AsSpan(8));
 
                                 blorb.Sounds[c.Number] = temp;
@@ -157,7 +157,7 @@ public class BlorbReader
                     {
                         // TODO Make sure that this is being handled correctly
                         int index = blorb.MetaData.IndexOf('<');
-                        blorb.MetaData = blorb.MetaData[index..];
+                        blorb.MetaData = blorb.MetaData.Substring(index);
                     }
                 }
                 else if (type.SequenceEqual(stackalloc char[] { 'F', 's', 'p', 'c' }))

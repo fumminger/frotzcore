@@ -6,7 +6,6 @@ using zword = System.UInt16;
 
 public interface IZScreen
 {
-    [DoesNotReturn]
     void HandleFatalError(string message);
     ScreenMetrics GetScreenMetrics();
     void DisplayChar(char c);

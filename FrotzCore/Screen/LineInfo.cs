@@ -54,8 +54,8 @@ public class LineInfo : IDisposable
 
         lock (_lockObj)
         {
-            chars.CopyTo(_chars.Span[pos..]);
-            _styles.Span[pos..].Fill(FandS);
+            chars.CopyTo(_chars.Span.Slice(pos));
+            _styles.Span.Slice(pos).Fill(FandS);
             LastCharSet = Math.Max(pos + chars.Length, Width);
 
             if (_changes is not null)
@@ -84,8 +84,8 @@ public class LineInfo : IDisposable
 
         lock (_lockObj)
         {
-            _chars.Span[left..right].Fill(' ');
-            _styles.Span[left..right].Fill(default);
+            _chars.Span.Slice(left,right-left).Fill(' ');
+            _styles.Span.Slice(left,right-left).Fill(default);
             LastCharSet = Math.Max(left + right, Width);
 
             if (_changes is not null)
@@ -96,7 +96,7 @@ public class LineInfo : IDisposable
         }
     }
 
-    public ReadOnlySpan<char> CurrentChars => _chars.Span[..(LastCharSet + 1)];
+    public ReadOnlySpan<char> CurrentChars => _chars.Span.Slice(0,LastCharSet + 1);
 
     public void Replace(int start, ReadOnlySpan<char> newString) => SetChars(start, newString);
 
@@ -133,7 +133,7 @@ public class LineInfo : IDisposable
         return _changes;
     }
 
-    public ReadOnlySpan<char> GetChars() => _chars.Span[..Width];
+    public ReadOnlySpan<char> GetChars() => _chars.Span.Slice(0,Width);
 
     public ReadOnlySpan<char> GetChars(int start, int length) => _chars.Span.Slice(start, length);
 

@@ -114,7 +114,7 @@ internal static class Redirect
                 if (redirect[depth].Width + width > redirect[depth].XSize)
                 {
                     if (s[pos] is ' ' or CharCodes.ZC_INDENT or CharCodes.ZC_GAP)
-                        width = OS.StringWidth(s[++pos..]);
+                        width = OS.StringWidth(s.Slice(++pos));
 
                     MemoryNewline();
                 }

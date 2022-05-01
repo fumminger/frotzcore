@@ -77,7 +77,7 @@ internal static class Err
 
     internal static void InitErr() =>
         /* Initialize the counters. */
-        error_count.AsSpan(..ErrorCodes.ERR_NUM_ERRORS).Clear();
+        error_count.AsSpan(0,ErrorCodes.ERR_NUM_ERRORS).Clear();
 
     /*
      * runtime_error

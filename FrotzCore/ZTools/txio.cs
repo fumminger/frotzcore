@@ -256,7 +256,7 @@ public static class txio
 
         int bytes_to_read = file_size == 0 ? 64 : page != (uint)(file_size / TxH.PAGE_SIZE) ? TxH.PAGE_SIZE : file_size & TxH.PAGE_MASK;
         gfp.Position = page * TxH.PAGE_SIZE;
-        gfp.Read(buffer[..bytes_to_read]);
+        gfp.Read(buffer.Slice(0,bytes_to_read));
 
     } /* read_page */
 
@@ -794,7 +794,7 @@ public static class txio
             if (tx_line_pos < tx_line.Length) tx_line[tx_line_pos++] = '\0';
             int eol = Array.IndexOf(tx_line, '\0');
             if (eol == -1) eol = tx_line_pos;
-            var temp = tx_line.AsSpan(..eol);
+            var temp = tx_line.AsSpan(0,eol);
             cp = temp.LastIndexOf(' ');
             if (c is ' ' or '\n' || cp == -1)
             {
@@ -810,11 +810,11 @@ public static class txio
             {
                 tx_line[cp++] = '\0';
 
-                sb.Append(temp[..cp]);
+                sb.Append(temp.Slice(0,cp));
                 sb.Append('\n');
                 tx_line_pos = 0;
                 tx_col = 1;
-                TxPrint(temp[cp..]);
+                TxPrint(temp.Slice(cp));
             }
         }
 

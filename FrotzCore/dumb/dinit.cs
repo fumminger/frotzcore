@@ -240,7 +240,6 @@ public static partial class OS
      * Display error message and stop interpreter.
      *
      */
-    [DoesNotReturn]
 #pragma warning disable CS8763 // A method marked [DoesNotReturn] should not return.
     public static void Fatal(string message)
     {

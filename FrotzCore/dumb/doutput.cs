@@ -756,7 +756,7 @@ public static partial class OS
             {
                 word[i] = s[i];
             }
-            DisplayString(word[..len]);
+            DisplayString(word.Slice(0,len));
         }
         finally
         {

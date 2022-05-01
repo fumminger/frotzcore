@@ -598,7 +598,7 @@ public static partial class OS
      * print_string and read_string to ask for a file name.
      *
      */
-    public static bool ReadFileName([NotNullWhen(true)] out string? out_file_name, string default_name, FileTypes flag)
+    public static bool ReadFileName(out string? out_file_name, string default_name, FileTypes flag)
     {
         zword[] file_name = new zword[FILENAME_MAX + 1];
         string prompt;
