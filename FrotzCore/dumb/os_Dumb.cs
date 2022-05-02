@@ -2,7 +2,6 @@
 using Frotz.Other;
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Frotz;
@@ -110,7 +109,8 @@ public static partial class OS
 
         for (int i = 0; i < uSpan.Length; i++)
         {
-            Unsafe.As<byte, ushort>(ref bytes[i * 2]) = uSpan[i];
+            bytes[2 * i] = (byte) (uSpan[i] & 0xff);
+            bytes[2 * i + 1] = (byte)((uSpan[i] & 0xff00) >> 8);
         }
 
         return Encoding.Unicode.GetString(bytes);
