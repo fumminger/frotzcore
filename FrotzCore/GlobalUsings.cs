@@ -3,6 +3,7 @@ global using Collections.Pooled;
 global using Microsoft.Toolkit.Diagnostics;
 global using Microsoft.Toolkit.HighPerformance;
 global using Microsoft.Toolkit.HighPerformance.Buffers;
+global using System.Buffers;
 
 global using zbyte = System.Byte;
 global using zword = System.UInt16;

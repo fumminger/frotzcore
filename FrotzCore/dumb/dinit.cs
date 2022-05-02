@@ -166,7 +166,7 @@ public static partial class OS
     {
         // WARNING : Have not ported the Frotz code, most arguments are not handled
 
-        Main.StoryData?.Dispose();
+        Main.StoryData = null;
 
         if (args.Length == 0)
         {
@@ -180,8 +180,8 @@ public static partial class OS
         {
             Main.StoryName = args[0];
             using var fs = new FileStream(args[0], FileMode.Open);
-            var data = MemoryOwner<byte>.Allocate((int)fs.Length);
-            fs.Read(data.Span);
+            var data = new byte[fs.Length];
+            fs.Read(data);
             Main.StoryData = data;
         }
 

@@ -158,20 +158,20 @@ internal static class FastMem
 
     internal readonly record struct
         UndoStruct(long Pc, long DiffSize, zword FrameCount, zword StackSize, zword FrameOffset, int Sp,
-                   MemoryOwner<zword> Stack, MemoryOwner<byte> UndoData) : IDisposable
+                   zword[] Stack, byte[] UndoData) : IDisposable
     {
         public void Dispose()
         {
-            Stack?.Dispose();
-            UndoData?.Dispose();
+            // Stack?.Dispose();
+            // UndoData?.Dispose();
         }
     }
 
     // static undo_struct first_undo = null, last_undo = null, curr_undo = null;
     //static zbyte *undo_mem = NULL, *prev_zmp, *undo_diff;
 
-    private static MemoryOwner<zbyte> PrevZmp = MemoryOwner<zbyte>.Empty;
-    private static MemoryOwner<zbyte> UndoDiff = MemoryOwner<zbyte>.Empty;
+    private static zbyte[] PrevZmp = new zbyte[0];
+    private static zbyte[] UndoDiff = new zbyte[0];
     private static readonly PooledList<UndoStruct> UndoMem = new();
     private static int UndoCount => UndoMem.Count;
 
@@ -476,16 +476,14 @@ internal static class FastMem
     internal static void InitUndo()
     {
         int len = ZMData.Length;
-        PrevZmp.Dispose();
-        PrevZmp = MemoryOwner<zbyte>.Allocate(len);
+        PrevZmp = new zbyte[len];
 
-        UndoDiff.Dispose();
-        UndoDiff = MemoryOwner<zbyte>.Allocate(len);
+        UndoDiff = new zbyte[len];
 
-        UndoMem.ForEach(x => x.Dispose());
+        //UndoMem.ForEach(x => x.Dispose());
         UndoMem.Clear();
 
-        ZMData.AsSpan(0,Main.h_dynamic_size).CopyTo(PrevZmp.Span);
+        ZMData.AsSpan(0,Main.h_dynamic_size).CopyTo(PrevZmp);
     }
 
     /// <summary>
@@ -941,16 +939,16 @@ internal static class FastMem
 
         var undo = UndoMem[UndoMem.Count-1];
 
-        ZMData.AsSpan(0,Main.h_dynamic_size).CopyTo(PrevZmp.Span);
+        ZMData.AsSpan(0,Main.h_dynamic_size).CopyTo(PrevZmp);
         SetPc(undo.Pc);
         Main.sp = undo.Sp;
         Main.fp = undo.FrameOffset;
         Main.frame_count = undo.FrameCount;
 
-        MemUndiff(undo.UndoData.Span, undo.DiffSize, PrevZmp.Span);
+        MemUndiff(undo.UndoData, undo.DiffSize, PrevZmp);
 
         var mainStack = Main.Stack.AsSpan(undo.Sp);
-        undo.Stack.Span.CopyTo(mainStack);
+        undo.Stack.CopyTo(mainStack);
         //Array.Copy(undo.Stack, 0, Main.Stack, undo.Sp, undo.Stack.Length);
         //Frotz.Other.ArrayCopy.Copy(undo.stack, 0, Main.stack, undo.sp, undo.stack.Length);
 
@@ -1116,16 +1114,16 @@ internal static class FastMem
         if (UndoCount == Main.option_undo_slots)
             FreeUndo(1);
 
-        int diff_size = MemDiff(ZMData, PrevZmp.Span, Main.h_dynamic_size, UndoDiff.Span);
+        int diff_size = MemDiff(ZMData, PrevZmp, Main.h_dynamic_size, UndoDiff);
         int stack_size = Main.Stack.Length;
 
         GetPc(out long pc);
         // p.undo_data = undo_diff;
-        var undoData = MemoryOwner<zbyte>.Allocate(diff_size);
-        UndoDiff.Span.Slice(0,diff_size).CopyTo(undoData.Span);
+        var undoData = new zbyte[diff_size];
+        UndoDiff.AsSpan().Slice(0,diff_size).CopyTo(undoData);
 
-        var stack = MemoryOwner<zword>.Allocate(Main.Stack.Length - Main.sp);
-        Main.Stack.AsSpan(Main.sp,Main.Stack.Length-Main.sp).CopyTo(stack.Span);
+        var stack = new zword[Main.Stack.Length - Main.sp];
+        Main.Stack.AsSpan(Main.sp,Main.Stack.Length-Main.sp).CopyTo(stack);
 
         //    p->frame_offset = fp - stack;
         UndoMem.Add(new(pc, diff_size, Main.frame_count, (zword)stack_size,

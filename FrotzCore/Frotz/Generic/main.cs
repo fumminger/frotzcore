@@ -33,7 +33,7 @@ public static class Main
 {
     public static string? StoryName { get; internal set; } = null;
 
-    internal static MemoryOwner<byte>? StoryData = null;
+    internal static byte[]? StoryData = null;
 
     internal static Story StoryId = Story.UNKNOWN;
     internal static long StorySize = 0;

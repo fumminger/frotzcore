@@ -20,7 +20,7 @@ public interface IZScreen
     string OpenExistingFile(string defaultName, string title, string filter);
     string OpenNewOrExistingFile(string defaultName, string title, string filter, string defaultExtension);
 
-    (string FileName, MemoryOwner<byte> FileData)? SelectGameFile();
+    (string FileName, byte[] FileData)? SelectGameFile();
 
     ZSize GetImageInfo(byte[] image);
 

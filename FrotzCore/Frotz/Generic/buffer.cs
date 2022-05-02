@@ -21,7 +21,7 @@ namespace Frotz.Generic;
 
 internal static class Buffer
 {
-    internal static MemoryOwner<zword> buffer_var = MemoryOwner<zword>.Empty;
+    internal static zword[] buffer_var = new zword[0];
     internal static int bufpos = 0;
     internal static bool locked = false;
 
@@ -36,8 +36,7 @@ internal static class Buffer
 
     internal static void InitBuffer()
     {
-        buffer_var?.Dispose();
-        buffer_var = MemoryOwner<zword>.Allocate(General.TEXT_BUFFER_SIZE);
+        buffer_var = new zword[General.TEXT_BUFFER_SIZE];
         bufpos = 0;
         prev_c = 0;
         locked = false;
@@ -62,9 +61,9 @@ internal static class Buffer
 
         /* Send the buffer to the output streams */
 
-        buffer_var.Span[bufpos] = '\0';
+        buffer_var[bufpos] = '\0';
         locked = true;
-        Stream.StreamWord(buffer_var.Span);
+        Stream.StreamWord(buffer_var);
         locked = false;
 
         /* Reset the buffer */
@@ -115,7 +114,7 @@ internal static class Buffer
 
             /* Insert the character into the buffer */
 
-            buffer_var.Span[bufpos++] = c;
+            buffer_var[bufpos++] = c;
 
             if (bufpos == General.TEXT_BUFFER_SIZE)
                 Err.RuntimeError(ErrorCodes.ERR_TEXT_BUF_OVF);

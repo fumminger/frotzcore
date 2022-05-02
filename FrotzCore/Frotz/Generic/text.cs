@@ -31,8 +31,8 @@ internal static class Text
 
     private const string _alphabet = " ^0123456789.,!?_#'\"/\\-:()";
 
-    private static MemoryOwner<zword> Decoded = MemoryOwner<zword>.Empty;
-    private static MemoryOwner<zword> Encoded = MemoryOwner<zword>.Empty;
+    private static zword[] Decoded = new zword[0];
+    private static zword[] Encoded = new zword[0];
     private static int Resolution;
 
 
@@ -64,13 +64,11 @@ internal static class Text
     {
         if (Decoded.Length > 0)
         {
-            Decoded.Dispose();
-            Decoded = MemoryOwner<zword>.Empty;
+            Decoded = new zword[0];
         }
         if (Encoded.Length > 0)
         {
-            Encoded.Dispose();
-            Encoded = MemoryOwner<zword>.Empty;
+            Encoded = new zword[0];
         }
 
         Resolution = 0;
@@ -268,10 +266,8 @@ internal static class Text
             Err.RuntimeError(ErrorCodes.ERR_DICT_LEN);
         }
 
-        Decoded.Dispose();
-        Decoded = MemoryOwner<zword>.Allocate(3 * Resolution + 1);
-        Encoded.Dispose();
-        Encoded = MemoryOwner<zword>.Allocate(Resolution);
+        Decoded = new zword[3 * Resolution + 1];
+        Encoded = new zword[Resolution];
     }/* find_resolution */
 
     /*
@@ -290,7 +286,7 @@ internal static class Text
 
         int i = 0;
 
-        var decoded = Decoded.Span;
+        var decoded = Decoded;
         while (i < 3 * Resolution)
         {
             if (i < length)
@@ -336,10 +332,10 @@ internal static class Text
 
         if (Resolution == 0) FindResolution();
 
-        var decoded = Decoded.Span;
-        var encoded = Encoded.Span;
+        var decoded = Decoded;
+        var encoded = Encoded;
 
-        if (decoded.IsEmpty || encoded.IsEmpty)
+        if (decoded.Length == 0 || encoded.Length == 0)
             ThrowHelper.ThrowInvalidOperationException("Decoded or Endoded not initialized");
 
         Span<zbyte> zchars = stackalloc zbyte[3 * (Resolution + 1)];
@@ -354,16 +350,16 @@ internal static class Text
                 switch (decoded[0])
                 {
                     case 'g':
-                        decoded.Clear();
-                        again.CopyTo(decoded);
+                        decoded.AsSpan().Clear();
+                        again.CopyTo(decoded.AsSpan());
                         break;
                     case 'x':
-                        decoded.Clear();
-                        examine.CopyTo(decoded);
+                        decoded.AsSpan().Clear();
+                        examine.CopyTo(decoded.AsSpan());
                         break;
                     case 'z':
-                        decoded.Clear();
-                        wait.CopyTo(decoded);
+                        decoded.AsSpan().Clear();
+                        wait.CopyTo(decoded.AsSpan());
                         break;
                 }
             }
@@ -480,9 +476,9 @@ internal static class Text
         LoadString((zword)(Process.zargs[0] + Process.zargs[2]), Process.zargs[1]);
         EncodeText(0x05);
 
-        var encoded = Encoded.Span;
+        var encoded = Encoded;
 
-        if (encoded.IsEmpty)
+        if (encoded.Length == 0)
             ThrowHelper.ThrowInvalidOperationException("Encoding not initialized.");
 
         for (int i = 0; i < Resolution; i++)
@@ -915,7 +911,7 @@ internal static class Text
 
         lower = 0;
         upper = entry_count - 1;
-        var encoded = Encoded.Span;
+        var encoded = Encoded;
 
         while (lower <= upper)
         {
@@ -1155,12 +1151,12 @@ internal static class Text
         int len;
         int i;
 
-        var decoded = Decoded.Span;
+        var decoded = Decoded;
 
-        if (decoded.IsEmpty)
+        if (decoded.Length == 0)
             ThrowHelper.ThrowInvalidOperationException("Decoded not initialized.");
 
-        decoded.Clear();
+        decoded.AsSpan().Clear();
 
         result = string.Empty;
 
@@ -1292,7 +1288,7 @@ internal static class Text
     {
         if (st == StringType.VOCABULARY)
         {
-            Decoded.Span[ptrDt++] = c;
+            Decoded[ptrDt++] = c;
         }
         else
         {

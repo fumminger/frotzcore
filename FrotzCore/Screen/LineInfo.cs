@@ -5,8 +5,8 @@ namespace Frotz.Screen;
 
 public class LineInfo : IDisposable
 {
-    private readonly MemoryOwner<char> _chars;
-    private readonly MemoryOwner<CharDisplayInfo> _styles;
+    private readonly char[] _chars;
+    private readonly CharDisplayInfo[] _styles;
     private readonly object _lockObj = new();
     private PooledList<FontChanges>? _changes;
 
@@ -17,11 +17,11 @@ public class LineInfo : IDisposable
 
     public LineInfo(int lineWidth)
     {
-        _chars = MemoryOwner<char>.Allocate(lineWidth);
-        _styles = MemoryOwner<CharDisplayInfo>.Allocate(lineWidth);
+        _chars = new char[lineWidth];
+        _styles = new CharDisplayInfo[lineWidth];
 
-        _chars.Span.Fill(' ');
-        _styles.Span.Fill(default);
+        Array.Fill(_chars,' ');
+        Array.Fill(_styles, default);
 
         Width = lineWidth;
 
@@ -35,8 +35,8 @@ public class LineInfo : IDisposable
 
         lock (_lockObj)
         {
-            _chars.Span[pos] = c;
-            _styles.Span[pos] = FandS;
+            _chars[pos] = c;
+            _styles[pos] = FandS;
             LastCharSet = Math.Max(pos, LastCharSet);
 
             _changes?.Dispose();
@@ -54,8 +54,8 @@ public class LineInfo : IDisposable
 
         lock (_lockObj)
         {
-            chars.CopyTo(_chars.Span.Slice(pos));
-            _styles.Span.Slice(pos).Fill(FandS);
+            chars.CopyTo(_chars.AsSpan().Slice(pos));
+            _styles.AsSpan().Slice(pos).Fill(FandS);
             LastCharSet = Math.Max(pos + chars.Length, Width);
 
             if (_changes is not null)
@@ -84,8 +84,8 @@ public class LineInfo : IDisposable
 
         lock (_lockObj)
         {
-            _chars.Span.Slice(left,right-left).Fill(' ');
-            _styles.Span.Slice(left,right-left).Fill(default);
+            _chars.AsSpan().Slice(left,right-left).Fill(' ');
+            _styles.AsSpan().Slice(left,right-left).Fill(default);
             LastCharSet = Math.Max(left + right, Width);
 
             if (_changes is not null)
@@ -96,7 +96,7 @@ public class LineInfo : IDisposable
         }
     }
 
-    public ReadOnlySpan<char> CurrentChars => _chars.Span.Slice(0,LastCharSet + 1);
+    public ReadOnlySpan<char> CurrentChars => _chars.AsSpan().Slice(0,LastCharSet + 1);
 
     public void Replace(int start, ReadOnlySpan<char> newString) => SetChars(start, newString);
 
@@ -112,7 +112,7 @@ public class LineInfo : IDisposable
                     var chars = CurrentChars;
 
                     var fc = new FontChanges(-1, 0, new CharDisplayInfo(-1, 0, 0, 0));
-                    var styles = _styles.Span;
+                    var styles = _styles;
                     for (int i = 0; i < Width; i++)
                     {
                         if (!styles[i].Equals(fc.FontAndStyle))
@@ -133,20 +133,20 @@ public class LineInfo : IDisposable
         return _changes;
     }
 
-    public ReadOnlySpan<char> GetChars() => _chars.Span.Slice(0,Width);
+    public ReadOnlySpan<char> GetChars() => _chars.AsSpan().Slice(0,Width);
 
-    public ReadOnlySpan<char> GetChars(int start, int length) => _chars.Span.Slice(start, length);
+    public ReadOnlySpan<char> GetChars(int start, int length) => _chars.AsSpan().Slice(start, length);
 
     public override string ToString() => GetChars().ToString();
 
-    public CharDisplayInfo GetFontAndStyle(int column) => _styles.Span[column];
+    public CharDisplayInfo GetFontAndStyle(int column) => _styles[column];
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
 
-        _styles.Dispose();
-        _chars.Dispose();
-        _changes?.Dispose();
+        //_styles.Dispose();
+        //_chars.Dispose();
+        //_changes?.Dispose();
     }
 }

@@ -140,19 +140,19 @@ public static partial class OS
         return c >= 0x100;
     }
 
-    public static (string FileName, MemoryOwner<byte> FileData)? SelectGameFile()
+    public static (string FileName, byte[] )? SelectGameFile()
     {
         Console.Write("Enter filename:");
         string? filename = Console.ReadLine();
 
-        MemoryOwner<byte>? buffer = null;
+        byte[]? buffer = null;
 
         if (filename is not null)
         {
             using (FileStream fs = File.Open(filename, FileMode.Open))
             {
-                buffer = MemoryOwner<byte>.Allocate((int)fs.Length);
-                fs.Read(buffer.Span);
+                buffer = new byte[fs.Length];
+                fs.Read(buffer);
             }
 
             if (buffer is not null)
@@ -187,10 +187,10 @@ public static partial class OS
      * -- Szurgot: Changed this to return a Memory stream, and also has Blorb Logic.. May need to refine
      * -- Changed this again to take a byte[] to allow the data to be loaded further up the chain
      */
-    public static System.IO.Stream PathOpen(MemoryOwner<byte> story_data)
+    public static System.IO.Stream PathOpen(byte[] story_data)
     {
         // WARNING : May break with blorb files
-        return story_data.AsStream();
+        return new MemoryStream(story_data);
     }
 
     /*
