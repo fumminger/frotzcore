@@ -838,7 +838,7 @@ internal static class Text
      * Print a string of ASCII characters.
      *
      */
-    internal static void PrintString(ReadOnlySpan<char> s)
+    internal static void PrintString(in string s)
     {
         foreach (char c in s)
         {
@@ -847,7 +847,8 @@ internal static class Text
             else
                 Buffer.PrintChar(c);
         }
-    }/* print_string */
+    }
+    /* print_string */
 
     /*
      * z_print_unicode

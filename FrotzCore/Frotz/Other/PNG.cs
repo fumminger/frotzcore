@@ -40,7 +40,7 @@ public class PNG
     private void ParsePng(Stream stream)
     {
         Span<byte> buffer = stackalloc byte[8];
-        stream.Read(buffer);
+        stream.Read(buffer.ToArray(), 0, buffer.Length);
 
         if (!buffer.SequenceEqual(Header))
         {
@@ -81,7 +81,7 @@ public class PNG
             Span<byte> bytes = buffer.Length > 0xff
                 ? (pooled = ArrayPool<byte>.Shared.Rent(len))
                 : stackalloc byte[len];
-            Encoding.UTF8.GetBytes(type, bytes);
+            Encoding.UTF8.GetBytes(type, 0, len, bytes.ToArray(), len);
             buffer.CopyTo(bytes.Slice(4));
 
             return CRC.Calculate(bytes.Slice(0,len));
@@ -96,14 +96,14 @@ public class PNG
     private static string ReadType(Stream stream)
     {
         Span<byte> buffer = stackalloc byte[4];
-        stream.Read(buffer);
-        return Encoding.UTF8.GetString(buffer);
+        stream.Read(buffer.ToArray(), 0, buffer.Length);
+        return Encoding.UTF8.GetString(buffer.ToArray());
     }
 
     private static uint ReadInt(Stream stream)
     {
         Span<byte> buffer = stackalloc byte[4];
-        stream.Read(buffer);
+        stream.Read(buffer.ToArray(), 0, buffer.Length);
         return BinaryPrimitives.ReadUInt32BigEndian(buffer);
     }
 
@@ -111,7 +111,7 @@ public class PNG
     {
         Span<byte> bytes = stackalloc byte[4];
         BinaryPrimitives.WriteUInt32BigEndian(bytes, num);
-        s.Write(bytes);
+        s.Write(bytes.ToArray(), 0, bytes.Length);
     }
 
     public void Save(string fileName)
@@ -122,7 +122,7 @@ public class PNG
 
     public void Save(Stream stream)
     {
-        stream.Write(Header);
+        stream.Write(Header.ToArray(), 0, Header.Length);
 
         foreach (string type in _chunkOrder)
         {
@@ -134,7 +134,7 @@ public class PNG
             stream.WriteByte((byte)type[2]);
             stream.WriteByte((byte)type[3]);
 
-            stream.Write(chunk.Data.Span);
+            stream.Write(chunk.Data.Span.ToArray(), 0, chunk.Data.Span.Length);
 
             WriteInt(stream, chunk.CRC);
         }

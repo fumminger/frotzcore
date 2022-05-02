@@ -96,7 +96,7 @@ public static partial class OS
         int i = 0;
         while (src[i] != 0)
         {
-            str[i++] = src[i];
+            str[i] = src[i];
             i++;
         }
         str[i] = '\0';
@@ -152,7 +152,7 @@ public static partial class OS
             using (FileStream fs = File.Open(filename, FileMode.Open))
             {
                 buffer = new byte[fs.Length];
-                fs.Read(buffer);
+                fs.Read(buffer, 0, (int) fs.Length);
             }
 
             if (buffer is not null)

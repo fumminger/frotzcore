@@ -8,11 +8,10 @@ namespace Frotz.Other;
 
 public static class ZMath
 {
-    public static uint MakeInt(ReadOnlySpan<char> chars)
+    public static uint MakeInt(string chars)
     {
         Debug.Assert(chars.Length == 4, "Must be 4 characters.");
-        Span<byte> bytes = stackalloc byte[4];
-        Encoding.UTF8.GetBytes(chars, bytes);
+        byte[] bytes = Encoding.UTF8.GetBytes(chars);
         return BinaryPrimitives.ReadUInt32BigEndian(bytes);
     }
 

@@ -181,7 +181,7 @@ public static partial class OS
             Main.StoryName = args[0];
             using var fs = new FileStream(args[0], FileMode.Open);
             var data = new byte[fs.Length];
-            fs.Read(data);
+            fs.Read(data,0, (int) fs.Length);
             Main.StoryData = data;
         }
 

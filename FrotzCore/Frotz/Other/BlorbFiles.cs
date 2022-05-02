@@ -90,7 +90,7 @@ public class BlorbReader
             : stackalloc byte[length];
         try
         {
-            int bytesRead = stream.Read(buffer.Slice(0,length));
+            int bytesRead = stream.Read(buffer.Slice(0,length).ToArray(), 0, length);
             buffer = buffer.Slice(0,bytesRead);
             if (chunks.ContainsKey(start - 8))
             {
@@ -152,7 +152,7 @@ public class BlorbReader
                 }
                 else if (type.SequenceEqual(stackalloc char[] { 'I', 'F', 'm', 'd' })) // Metadata
                 {
-                    blorb.MetaData = Encoding.UTF8.GetString(buffer);
+                    blorb.MetaData = Encoding.UTF8.GetString(buffer.ToArray());
                     if (blorb.MetaData[0] != '<')
                     {
                         // TODO Make sure that this is being handled correctly
@@ -169,7 +169,7 @@ public class BlorbReader
                 {
                     // TODO It seems that when it gets the story name, it is actually stored as 2 byte words,
                     // not one byte chars
-                    blorb.StoryName = Encoding.UTF8.GetString(buffer);
+                    blorb.StoryName = Encoding.UTF8.GetString(buffer.ToArray());
                 }
                 else if (type.SequenceEqual(stackalloc char[] { 'A', 'P', 'a', 'l' }))
                 {
@@ -314,18 +314,18 @@ public class BlorbReader
             throw new ArgumentException($"The array must have less than 10 items, had a size of {destination.Length}", nameof(destination));
         }
         Span<byte> buffer = stackalloc byte[4];
-        int read = stream.Read(buffer);
+        int read = stream.Read(buffer.ToArray(), 0, buffer.Length);
 
         if (read < buffer.Length)
             throw new InvalidOperationException("Not enough bytes available in stream.");
 
-        return Encoding.UTF8.GetChars(buffer, destination);
+        return Encoding.UTF8.GetChars(buffer.ToArray(), 0, buffer.Length, destination.ToArray(), buffer.Length);
     }
 
     private static int ReadInt(Stream stream)
     {
         Span<byte> buffer = stackalloc byte[4];
-        int read = stream.Read(buffer);
+        int read = stream.Read(buffer.ToArray(), 0, buffer.Length);
 
         if (read < buffer.Length)
             throw new InvalidOperationException("Not enough bytes available in stream.");

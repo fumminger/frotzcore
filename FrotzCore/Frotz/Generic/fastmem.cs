@@ -581,7 +581,7 @@ internal static class FastMem
 
             StoryFp.Position = InitFpPos;
 
-            int read = StoryFp.Read(ZMData.AsSpan(0,Main.h_dynamic_size));
+            int read = StoryFp.Read(ZMData.AsSpan(0,Main.h_dynamic_size).ToArray(), 0, Main.h_dynamic_size);
             if (read != Main.h_dynamic_size)
             {
                 OS.Fatal("Story file read error");

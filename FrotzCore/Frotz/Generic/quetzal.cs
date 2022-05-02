@@ -76,7 +76,7 @@ internal static class Quetzal
     {
         Span<byte> bytes = stackalloc byte[2];
         BinaryPrimitives.WriteUInt16BigEndian(bytes, w);
-        fp.Write(bytes);
+        fp.Write(bytes.ToArray(), 0, bytes.Length);
 
         return true;
     }
@@ -86,7 +86,7 @@ internal static class Quetzal
     {
         Span<byte> bytes = stackalloc byte[2];
         BinaryPrimitives.WriteUInt16BigEndian(bytes, (ushort)w);
-        fp.Write(bytes);
+        fp.Write(bytes.ToArray(),0,bytes.Length);
 
         return true;
     }
@@ -96,7 +96,7 @@ internal static class Quetzal
     {
         Span<byte> bytes = stackalloc byte[4];
         BinaryPrimitives.WriteUInt32BigEndian(bytes, (uint)x);
-        fp.Write(bytes);
+        fp.Write(bytes.ToArray(), 0, bytes.Length);
 
         return true;
     }
@@ -106,10 +106,10 @@ internal static class Quetzal
         Span<byte> bytes = stackalloc byte[4];
 
         BinaryPrimitives.WriteUInt32BigEndian(bytes, (uint)id);
-        fp.Write(bytes);
+        fp.Write(bytes.ToArray(), 0, bytes.Length);
 
         BinaryPrimitives.WriteUInt32BigEndian(bytes, (uint)len);
-        fp.Write(bytes);
+        fp.Write(bytes.ToArray(), 0, bytes.Length);
 
         return true;
     }
@@ -118,7 +118,7 @@ internal static class Quetzal
     private static bool TryReadWord(FileStream fs, out zword result)
     {
         Span<byte> buffer = stackalloc byte[2];
-        if (fs.Read(buffer) < 2)
+        if (fs.Read(buffer.ToArray(), 0, buffer.Length) < 2)
         {
             result = zword.MaxValue;
             return false;
@@ -132,7 +132,7 @@ internal static class Quetzal
     private static bool TryReadLong(FileStream fs, out zlong result)
     {
         Span<byte> buffer = stackalloc byte[4];
-        if (fs.Read(buffer) < 4)
+        if (fs.Read(buffer.ToArray(), 0, buffer.Length) < 4)
         {
             result = zlong.MaxValue;
             return false;

@@ -38,7 +38,7 @@ public static class DebugState
         if (IsActive)
         {
             using var fs = new FileStream(fileToSaveTo, FileMode.Create);
-            fs.Write(FastMem.ZMData);
+            fs.Write(FastMem.ZMData, 0, FastMem.ZMData.Length);
         }
     }
 

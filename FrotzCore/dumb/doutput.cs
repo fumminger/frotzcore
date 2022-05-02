@@ -745,7 +745,7 @@ public static partial class OS
         }
     }
 
-    public static void DisplayString(ReadOnlySpan<char> s)
+    public static void DisplayString(string s)
     {
         zword[]? pooled = null;
         int len = s.Length;
