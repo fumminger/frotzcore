@@ -430,11 +430,11 @@ internal static class FastMem
             int len = ZMData.Length;
             if (len < Main.StorySize)
             {
-                using var buffer = SpanOwner<byte>.Allocate(len);
-                ZMData.CopyTo(buffer.Span);
+                var buffer = new byte[len];
+                ZMData.CopyTo(buffer.AsSpan());
 
                 ZMData = new byte[Main.StorySize];
-                buffer.Span.CopyTo(ZMData);
+                buffer.CopyTo(ZMData.AsSpan());
             }
 
             /* Load story file in chunks of 32KB */

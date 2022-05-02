@@ -97,7 +97,7 @@ public class PNG
     {
         Span<byte> buffer = stackalloc byte[4];
         stream.Read(buffer);
-        return StringPool.Shared.GetOrAdd(buffer, Encoding.UTF8);
+        return Encoding.UTF8.GetString(buffer);
     }
 
     private static uint ReadInt(Stream stream)

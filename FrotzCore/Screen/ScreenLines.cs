@@ -53,9 +53,9 @@ public class ScreenLines : IDisposable
         // TODO Do something with units
         // TODO Check Boundaries
         int numchars = right - left + 1;
-        MemoryOwner<char>? replaceOwner = null, tempOwner = null;
-        Span<char> replace = numchars > 0xff ? (replaceOwner = MemoryOwner<char>.Allocate(numchars)).Span : stackalloc char[numchars];
-        Span<char> temp = numchars > 0xff ? (tempOwner = MemoryOwner<char>.Allocate(numchars)).Span : stackalloc char[numchars];
+        char[]? replaceOwner = null, tempOwner = null;
+        Span<char> replace = numchars > 0xff ? replaceOwner = new char[numchars] : stackalloc char[numchars];
+        Span<char> temp = numchars > 0xff ? tempOwner = new char[numchars] : stackalloc char[numchars];
         try
         {
             replace.Fill(' ');
@@ -69,8 +69,8 @@ public class ScreenLines : IDisposable
         }
         finally
         {
-            replaceOwner?.Dispose();
-            tempOwner?.Dispose();
+            //replaceOwner?.Dispose();
+            //tempOwner?.Dispose();
         }
     }
 

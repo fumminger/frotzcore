@@ -533,8 +533,8 @@ internal static class Quetzal
         if ((stkspos = svf.Position) < 0) return 0;
         if (!WriteChunk(svf, ID_Stks, 0)) return 0;
 
-        using var buffer = SpanOwner<zword>.Allocate(General.STACK_SIZE / 4 + 1);
-        var frames = buffer.Span;
+        var buffer = new zword[General.STACK_SIZE / 4 + 1];
+        var frames = buffer;
         /*
             * We construct a list of frame indices, most recent first, in `frames'.
             * These indices are the offsets into the `stack' array of the word before

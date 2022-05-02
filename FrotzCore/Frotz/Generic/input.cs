@@ -202,8 +202,8 @@ internal static class Input
      */
     internal static void ZRead()
     {
-        using var pooled = SpanOwner<zword>.Allocate(General.INPUT_BUFFER_SIZE);
-        var buffer = pooled.Span;
+        var pooled = new zword[General.INPUT_BUFFER_SIZE];
+        var buffer = pooled;
         zword addr;
         zword key;
         zbyte size;

@@ -253,7 +253,7 @@ public class BlorbReader
 
     internal static Blorb ReadBlorbFile(IMemoryOwner<byte> storyData)
     {
-        using var stream = storyData.AsStream();
+        var stream = new MemoryStream(storyData.Memory.ToArray());
         return ReadBlorbFile(stream);
     }
 
