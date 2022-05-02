@@ -532,7 +532,7 @@ public static class OS
      */
     public static zword ReadLine(int max, Span<zword> buf, int timeout, int width, bool continued)
     {
-        if (XScreen is null) ThrowHelper.ThrowInvalidOperationException("Screen has not been set.");
+        if (XScreen is null) throw new InvalidOperationException("Screen has not been set.");
 
         //        ZC_SINGLE_CLICK || ZC_DOUBLE_CLICK
 
@@ -742,7 +742,7 @@ public static class OS
      */
     public static zword ReadKey(int timeout, bool cursor)
     {
-        if (XScreen is null) ThrowHelper.ThrowInvalidOperationException("Screen has not been set.");
+        if (XScreen is null) throw new InvalidOperationException("Screen has not been set.");
 
         XScreen.RefreshScreen();
 
@@ -960,7 +960,7 @@ public static class OS
      */
     public static int StringWidth(ReadOnlySpan<zword> s)
     {
-        if (XScreen is null) ThrowHelper.ThrowInvalidOperationException("Screen not initialized.");
+        if (XScreen is null) throw new InvalidOperationException("Screen not initialized.");
 
         using var sb = new ValueStringBuilder();
         int font = -1;
@@ -1036,7 +1036,7 @@ public static class OS
      */
     public static zword PeekColor()
     {
-        if (XScreen is null) ThrowHelper.ThrowInvalidOperationException("Screen has not been set.");
+        if (XScreen is null) throw new InvalidOperationException("Screen has not been set.");
         return XScreen.PeekColor();
     }
 
@@ -1080,7 +1080,7 @@ public static class OS
                 }
                 else
                 {
-                    if (XScreen is null) ThrowHelper.ThrowInvalidOperationException("Screen has not been set.");
+                    if (XScreen is null) throw new InvalidOperationException("Screen has not been set.");
                     (height, width) = XScreen.GetImageInfo(buffer);
                 }
 
@@ -1330,7 +1330,7 @@ public static class OS
     public static void GameStarted()
     {
         if (XScreen is null || Main.StoryName is null)
-            ThrowHelper.ThrowInvalidOperationException("Game not properly initialized.");
+            throw new InvalidOperationException("Game not properly initialized.");
 
         XScreen.StoryStarted(Main.StoryName, BlorbFile);
     }

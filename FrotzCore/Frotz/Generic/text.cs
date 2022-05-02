@@ -282,7 +282,7 @@ internal static class Text
         if (Resolution == 0) FindResolution();
 
         if (Decoded.Length == 0)
-            ThrowHelper.ThrowInvalidOperationException("Decoded not initialized");
+            throw new InvalidOperationException("Decoded not initialized");
 
         int i = 0;
 
@@ -336,7 +336,7 @@ internal static class Text
         var encoded = Encoded;
 
         if (decoded.Length == 0 || encoded.Length == 0)
-            ThrowHelper.ThrowInvalidOperationException("Decoded or Endoded not initialized");
+            throw new InvalidOperationException("Decoded or Endoded not initialized");
 
         Span<zbyte> zchars = stackalloc zbyte[3 * (Resolution + 1)];
         //                ptr = decoded;
@@ -479,7 +479,7 @@ internal static class Text
         var encoded = Encoded;
 
         if (encoded.Length == 0)
-            ThrowHelper.ThrowInvalidOperationException("Encoding not initialized.");
+            throw new InvalidOperationException("Encoding not initialized.");
 
         for (int i = 0; i < Resolution; i++)
             FastMem.StoreW((zword)(Process.zargs[3] + 2 * i), encoded[i]);
@@ -890,7 +890,7 @@ internal static class Text
         Text.EncodeText(padding);
 
         if (Encoded is null)
-            ThrowHelper.ThrowInvalidOperationException("Encoding not initialized.");
+            throw new InvalidOperationException("Encoding not initialized.");
 
         FastMem.LowByte(dct, out zbyte sep_count);      /* skip word separators */
         dct += (zword)(1 + sep_count);
@@ -1154,7 +1154,7 @@ internal static class Text
         var decoded = Decoded;
 
         if (decoded.Length == 0)
-            ThrowHelper.ThrowInvalidOperationException("Decoded not initialized.");
+            throw new InvalidOperationException("Decoded not initialized.");
 
         decoded.AsSpan().Clear();
 

@@ -314,7 +314,7 @@ internal static class Files
     private static void RecordCode(int c, bool force_encoding)
     {
         if (Rfp is null)
-            ThrowHelper.ThrowInvalidOperationException("Rfp not initialized.");
+            throw new InvalidOperationException("Rfp not initialized.");
 
         if (force_encoding || (c is '[' or < 0x20 or > 0x7e))
         {
@@ -463,7 +463,7 @@ internal static class Files
     private static int ReplayCode()
     {
         if (Pfp is null)
-            ThrowHelper.ThrowInvalidOperationException("Pfp not initialized");
+            throw new InvalidOperationException("Pfp not initialized");
 
         int c;
 
@@ -492,7 +492,7 @@ internal static class Files
     private static zword ReplayChar()
     {
         if (Pfp is null)
-            ThrowHelper.ThrowInvalidOperationException("Pfp not initialized.");
+            throw new InvalidOperationException("Pfp not initialized.");
 
         int c;
         if ((c = ReplayCode()) != -1)

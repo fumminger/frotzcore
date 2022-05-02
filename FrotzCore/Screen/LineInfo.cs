@@ -31,7 +31,7 @@ public class LineInfo : IDisposable
     public void SetChar(int pos, char c, CharDisplayInfo FandS = default)
     {
         if ((uint)pos >= (uint)Width)
-            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(pos));
+            throw new ArgumentOutOfRangeException(nameof(pos));
 
         lock (_lockObj)
         {
@@ -47,10 +47,10 @@ public class LineInfo : IDisposable
     public void SetChars(int pos, ReadOnlySpan<char> chars, CharDisplayInfo FandS = default)
     {
         if ((uint)pos >= (uint)Width)
-            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(pos));
+            throw new ArgumentOutOfRangeException(nameof(pos));
 
         if ((uint)pos + chars.Length >= (uint)Width)
-            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(chars), "Too many chars to fit in line.");
+            throw new ArgumentOutOfRangeException(nameof(chars), "Too many chars to fit in line.");
 
         lock (_lockObj)
         {
@@ -77,10 +77,10 @@ public class LineInfo : IDisposable
     public void ClearChars(int left, int right)
     {
         if ((uint)left >= (uint)Width)
-            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(left));
+            throw new ArgumentOutOfRangeException(nameof(left));
 
         if ((uint)left + right >= (uint)Width)
-            ThrowHelper.ThrowArgumentOutOfRangeException(nameof(right), "Too many chars to fit in line.");
+            throw new ArgumentOutOfRangeException(nameof(right), "Too many chars to fit in line.");
 
         lock (_lockObj)
         {

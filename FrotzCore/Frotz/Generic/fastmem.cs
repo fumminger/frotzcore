@@ -297,7 +297,7 @@ internal static class FastMem
         int i, j;
 
         if (Main.StoryData is null || Main.StoryName is null)
-            ThrowHelper.ThrowInvalidOperationException("Story not initialized.");
+            throw new InvalidOperationException("Story not initialized.");
 
         StoryFp?.Dispose();
         StoryFp = OS.PathOpen(Main.StoryData);
@@ -577,7 +577,7 @@ internal static class FastMem
         if (!FirstRestart)
         {
             if (StoryFp is null)
-                ThrowHelper.ThrowInvalidOperationException("StoryFp not initialized.");
+                throw new InvalidOperationException("StoryFp not initialized.");
 
             StoryFp.Position = InitFpPos;
 
@@ -718,7 +718,7 @@ internal static class FastMem
             SaveName = new_name;
 
             if (StoryFp is null)
-                ThrowHelper.ThrowInvalidOperationException("StoryFp not initialized.");
+                throw new InvalidOperationException("StoryFp not initialized.");
 
             /* Open game file */
             using (var gfp = new FileStream(new_name, FileMode.Open))
@@ -1024,7 +1024,7 @@ internal static class FastMem
             SaveName = new_name;
 
             if (StoryFp is null)
-                ThrowHelper.ThrowInvalidOperationException("StoryFp not initialized.");
+                throw new InvalidOperationException("StoryFp not initialized.");
 
             /* Open game file */
 

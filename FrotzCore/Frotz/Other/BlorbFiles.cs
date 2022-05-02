@@ -268,7 +268,7 @@ public class BlorbReader
         ReadChars(stream, chars);
         if (!chars.SequenceEqual(stackalloc char[] { 'F', 'O', 'R', 'M' }))
         {
-            ThrowHelper.ThrowInvalidDataException("Not a FORM");
+            throw new InvalidDataException("Not a FORM");
         }
 
         int len = ReadInt(stream);
@@ -276,7 +276,7 @@ public class BlorbReader
 
         if (!chars.SequenceEqual(stackalloc char[] { 'I', 'F', 'R', 'S' }))
         {
-            ThrowHelper.ThrowInvalidDataException("Not an IFRS FORM");
+            throw new InvalidDataException("Not an IFRS FORM");
         }
 
         HandleForm(blorb, stream, (int)stream.Position - 4, len, chunks); // Backup over the Form ID so that handle form can read it
@@ -309,13 +309,15 @@ public class BlorbReader
 
     private static int ReadChars(Stream stream, Span<char> destination)
     {
-        Guard.HasSizeGreaterThanOrEqualTo(destination, 4, nameof(destination));
-
+        if (destination.Length >= 4)
+        {
+            throw new ArgumentException($"The array must have less than 10 items, had a size of {destination.Length}", nameof(destination));
+        }
         Span<byte> buffer = stackalloc byte[4];
         int read = stream.Read(buffer);
 
         if (read < buffer.Length)
-            ThrowHelper.ThrowInvalidOperationException("Not enough bytes available in stream.");
+            throw new InvalidOperationException("Not enough bytes available in stream.");
 
         return Encoding.UTF8.GetChars(buffer, destination);
     }
@@ -326,7 +328,7 @@ public class BlorbReader
         int read = stream.Read(buffer);
 
         if (read < buffer.Length)
-            ThrowHelper.ThrowInvalidOperationException("Not enough bytes available in stream.");
+            throw new InvalidOperationException("Not enough bytes available in stream.");
 
         return BinaryPrimitives.ReadInt32BigEndian(buffer);
     }

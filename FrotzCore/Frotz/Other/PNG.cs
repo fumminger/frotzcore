@@ -44,7 +44,7 @@ public class PNG
 
         if (!buffer.SequenceEqual(Header))
         {
-            ThrowHelper.ThrowArgumentException("Not a valid PNG file");
+            throw new ArgumentException("Not a valid PNG file");
         }
 
         while (stream.Position < stream.Length)
