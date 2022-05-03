@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="os_WPF.cs" />
+    <Compile Remove="ValueStringBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="FrotzCoreConsole.deps.json" />

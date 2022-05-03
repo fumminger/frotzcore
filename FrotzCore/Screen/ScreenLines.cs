@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Frotz.Screen;
 
@@ -106,10 +107,10 @@ public class ScreenLines : IDisposable
         int pos = 0;
 
         changes = new List<FontChanges>(line * Columns * 3);
-        using var sb = new ValueStringBuilder();
+        var sb = new StringBuilder();
         for (int i = 0; i < line; i++)
         {
-            sb.Append(_lines[i].GetChars());
+            sb.Append(_lines[i].GetChars().ToString());
             sb.Append(Environment.NewLine);
 
             // Start col needs to stay per line, and there needs to be pos offset per line

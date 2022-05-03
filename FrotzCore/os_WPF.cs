@@ -609,7 +609,7 @@ public static class OS
                 }
                 else if (c == CharCodes.ZC_RETURN)
                 {
-                    using var sb = new ValueStringBuilder(buffer.Count);
+                    var sb = new StringBuilder(buffer.Count);
                     foreach (var bc in buffer.Span)
                     {
                         sb.Append(bc);
@@ -962,7 +962,7 @@ public static class OS
     {
         if (XScreen is null) throw new InvalidOperationException("Screen not initialized.");
 
-        using var sb = new ValueStringBuilder();
+        var sb = new StringBuilder();
         int font = -1;
         int style = -1;
 

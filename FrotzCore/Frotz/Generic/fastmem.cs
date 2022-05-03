@@ -26,6 +26,7 @@ using System;
 using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Frotz.Generic;
 
@@ -628,7 +629,7 @@ internal static class FastMem
         if (addr != 0)
         {
 
-            using var vsb = new ValueStringBuilder();
+            var vsb = new StringBuilder();
 
             int i;
 
@@ -649,7 +650,7 @@ internal static class FastMem
             }
 
             // default_name[i] = 0;
-            if (vsb.IndexOf('.') == -1)
+            if (vsb.ToString().IndexOf('.') == -1)
             {
                 vsb.Append(".AUX");
                 return vsb.ToString();
