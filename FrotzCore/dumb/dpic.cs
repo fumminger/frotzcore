@@ -2,15 +2,18 @@
 
 using static Frotz.Constants.ZColor;
 
+using zbyte = System.Byte;
+using zword = System.UInt16;
 
-namespace Frotz;
-
-public static partial class OS
+namespace Frotz
 {
 
-    private static bool dumb_init_pictures()
+    public static partial class OS
     {
-#if NO_BLORB==false
+
+        private static bool dumb_init_pictures()
+        {
+#if NO_BLORB == false
         int maxlegalpic = 0;
         int i, x_scale, y_scale;
         bool success = FALSE;
@@ -126,11 +129,11 @@ else z_header.flags &= ~GRAPHICS_FLAG;
 
 return success;
 #else
-return false;
+            return false;
 #endif
-}
+        }
 
-    /* Convert a Z picture number to an index into pict_info.  */
+        /* Convert a Z picture number to an index into pict_info.  */
 #if NO_BLORB == false
     static int z_num_to_index(int n)
     {
@@ -144,22 +147,22 @@ return false;
     }
 #endif
 
-    /*
-      * os_picture_data
-      *
-      * Return true if the given picture is available. If so, store the
-      * picture width and height in the appropriate variables. Picture
-      * number 0 is a special case: Write the highest legal picture number
-      * and the picture file release number into the height and width
-      * variables respectively when this picture number is asked for.
-      *
-      */
-    public static bool PictureData(int picture, out int height, out int width)
-    {
-        height = 0;
-        width = 0;
+        /*
+          * os_picture_data
+          *
+          * Return true if the given picture is available. If so, store the
+          * picture width and height in the appropriate variables. Picture
+          * number 0 is a special case: Write the highest legal picture number
+          * and the picture file release number into the height and width
+          * variables respectively when this picture number is asked for.
+          *
+          */
+        public static bool PictureData(int picture, out int height, out int width)
+        {
+            height = 0;
+            width = 0;
 
-# if NO_BLORB == false
+#if NO_BLORB == false
         int index;
 
         if (!pict_info)
@@ -172,19 +175,19 @@ return false;
         width = pict_info[index].width;
 #endif
 
-        return true;
-    }
+            return true;
+        }
 
-    /*
-      * os_draw_picture
-      *
-      * Display a picture at the given coordinates.
-      *
-      */
-    public static void DrawPicture(int picture, int y, int x)
-    {
+        /*
+          * os_draw_picture
+          *
+          * Display a picture at the given coordinates.
+          *
+          */
+        public static void DrawPicture(int picture, int y, int x)
+        {
 
-# if NO_BLORB == false
+#if NO_BLORB == false
         int width, height, r, c;
         if (!os_picture_data(num, &height, &width) || !width || !height)
             return;
@@ -218,25 +221,27 @@ return false;
                 dumb_set_picture_cell(row + height - 2, c, num ? (num % 10 + '0') : ':');
         }
 #endif
-    }
+        }
 
 
-    /*
-     * os_peek_color
-     *
-     * Return the color of the screen unit below the cursor. (If the
-     * interface uses a text mode, it may return the background colour
-     * of the character at the cursor position instead.) This is used
-     * when text is printed on top of pictures. Note that this coulor
-     * need not be in the standard set of Z-machine colours. To handle
-     * this situation, Frotz entends the colour scheme: Colours above
-     * 15 (and below 256) may be used by the interface to refer to non
-     * standard colours. Of course, os_set_colour must be able to deal
-     * with these colours.
-     *
-     */
-    public static zword PeekColor()
-    {
-        return BLACK_COLOUR;
+        /*
+         * os_peek_color
+         *
+         * Return the color of the screen unit below the cursor. (If the
+         * interface uses a text mode, it may return the background colour
+         * of the character at the cursor position instead.) This is used
+         * when text is printed on top of pictures. Note that this coulor
+         * need not be in the standard set of Z-machine colours. To handle
+         * this situation, Frotz entends the colour scheme: Colours above
+         * 15 (and below 256) may be used by the interface to refer to non
+         * standard colours. Of course, os_set_colour must be able to deal
+         * with these colours.
+         *
+         */
+
+        public static zword PeekColor()
+        {
+            return BLACK_COLOUR;
+        }
     }
 }

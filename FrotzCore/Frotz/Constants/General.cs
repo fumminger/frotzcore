@@ -1,29 +1,31 @@
 using System;
 
-namespace Frotz.Constants;
-
-// typedef unsigned char zbyte;
-// typedef unsigned short zword;
-
-public static class General
+namespace Frotz.Constants
 {
-    /*** Constants that may be set at compile time ***/
-    public const int TEXT_BUFFER_SIZE = 2000;
-    public const int MAX_FILE_NAME = 256;
-    public const int INPUT_BUFFER_SIZE = 200;
-    public const int STACK_SIZE = 32768;
 
-    public const int MAX_UNDO_SLOTS = 500;
+    // typedef unsigned char zbyte;
+    // typedef unsigned short zword;
 
-    public const string DEFAULT_SAVE_NAME = "story.sav";
-    public const string DEFAULT_SCRIPT_NAME = "story.scr";
-    public const string DEFAULT_COMMAND_NAME = "story.rec";
-    public const string DEFAULT_AUXILARY_NAME = "story.aux";
+    public static class General
+    {
+        /*** Constants that may be set at compile time ***/
+        public const int TEXT_BUFFER_SIZE = 2000;
+        public const int MAX_FILE_NAME = 256;
+        public const int INPUT_BUFFER_SIZE = 200;
+        public const int STACK_SIZE = 32768;
 
-    public const string DEFAULT_SAVE_DIR = ".frotz-saves";
+        public const int MAX_UNDO_SLOTS = 500;
 
-    /// <summary>
-    /// The string "FORM" when UTF-8 encoded
-    /// </summary>
-    internal static ReadOnlySpan<byte> FormBytes => new byte[] { 70, 79, 82, 77 };
+        public const string DEFAULT_SAVE_NAME = "story.sav";
+        public const string DEFAULT_SCRIPT_NAME = "story.scr";
+        public const string DEFAULT_COMMAND_NAME = "story.rec";
+        public const string DEFAULT_AUXILARY_NAME = "story.aux";
+
+        public const string DEFAULT_SAVE_DIR = ".frotz-saves";
+
+        /// <summary>
+        /// The string "FORM" when UTF-8 encoded
+        /// </summary>
+        internal static ReadOnlySpan<byte> FormBytes => new byte[] { 70, 79, 82, 77 };
+    }
 }

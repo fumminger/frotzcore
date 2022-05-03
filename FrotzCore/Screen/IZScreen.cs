@@ -1,65 +1,67 @@
-﻿namespace Frotz.Screen;
-
-using System;
-using System.Diagnostics.CodeAnalysis;
-using zword = System.UInt16;
-
-public interface IZScreen
+﻿namespace Frotz.Screen
 {
-    void HandleFatalError(string message);
-    ScreenMetrics GetScreenMetrics();
-    void DisplayChar(char c);
-    void RefreshScreen(); // TODO Need to make this a little different
-    void SetCursorPosition(int x, int y);
-    void ScrollLines(int top, int height, int lines);
-    event EventHandler<ZKeyPressEventArgs> KeyPressed;
-    void SetTextStyle(int new_style);
-    void Clear();
-    void ClearArea(int top, int left, int bottom, int right);
 
-    string OpenExistingFile(string defaultName, string title, string filter);
-    string OpenNewOrExistingFile(string defaultName, string title, string filter, string defaultExtension);
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using zword = System.UInt16;
 
-    (string FileName, byte[] FileData)? SelectGameFile();
+    public interface IZScreen
+    {
+        void HandleFatalError(string message);
+        ScreenMetrics GetScreenMetrics();
+        void DisplayChar(char c);
+        void RefreshScreen(); // TODO Need to make this a little different
+        void SetCursorPosition(int x, int y);
+        void ScrollLines(int top, int height, int lines);
+        event EventHandler<ZKeyPressEventArgs> KeyPressed;
+        void SetTextStyle(int new_style);
+        void Clear();
+        void ClearArea(int top, int left, int bottom, int right);
 
-    ZSize GetImageInfo(byte[] image);
+        string OpenExistingFile(string defaultName, string title, string filter);
+        string OpenNewOrExistingFile(string defaultName, string title, string filter, string defaultExtension);
 
-    void ScrollArea(int top, int bottom, int left, int right, int units);
+        (string FileName, byte[] FileData)? SelectGameFile();
 
-    void DrawPicture(int picture, byte[] image, int y, int x);
+        ZSize GetImageInfo(byte[] image);
 
-    void SetFont(int font);
+        void ScrollArea(int top, int bottom, int left, int right, int units);
 
-    void DisplayMessage(string message, string caption);
+        void DrawPicture(int picture, byte[] image, int y, int x);
 
-    int GetStringWidth(string s, CharDisplayInfo font);
+        void SetFont(int font);
 
-    void RemoveChars(int count);
+        void DisplayMessage(string message, string caption);
 
-    bool GetFontData(int font, ref zword height, ref zword width);
+        int GetStringWidth(string s, CharDisplayInfo font);
 
-    void GetColor(out int foreground, out int background);
-    void SetColor(int new_foreground, int new_background);
+        void RemoveChars(int count);
 
-    zword PeekColor();
+        bool GetFontData(int font, ref zword height, ref zword width);
 
-    void FinishWithSample(int number);
-    void PrepareSample(int number);
-    void StartSample(int number, int volume, int repeats, zword eos);
-    void StopSample(int number);
+        void GetColor(out int foreground, out int background);
+        void SetColor(int new_foreground, int new_background);
 
-    void SetInputMode(bool inputMode, bool cursorVisibility);
+        zword PeekColor();
 
-    void SetInputColor();
-    void AddInputChar(char c);
+        void FinishWithSample(int number);
+        void PrepareSample(int number);
+        void StartSample(int number, int volume, int repeats, zword eos);
+        void StopSample(int number);
 
-    void StoryStarted(string storyName, Blorb.Blorb? blorbFile);
+        void SetInputMode(bool inputMode, bool cursorVisibility);
 
-    ZPoint GetCursorPosition();
+        void SetInputColor();
+        void AddInputChar(char c);
 
-    void SetActiveWindow(int win);
-    void SetWindowSize(int win, int top, int left, int height, int width);
+        void StoryStarted(string storyName, Blorb.Blorb? blorbFile);
 
-    bool ShouldWrap();
+        ZPoint GetCursorPosition();
 
+        void SetActiveWindow(int win);
+        void SetWindowSize(int win, int top, int left, int height, int width);
+
+        bool ShouldWrap();
+
+    }
 }

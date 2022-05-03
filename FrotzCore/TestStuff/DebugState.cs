@@ -4,44 +4,46 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 
-namespace Frotz;
-
-public static class DebugState
+namespace Frotz
 {
-    internal static bool IsActive { get; private set; }
-    public static void StartState(string stateFileToLoad)
+
+    public static class DebugState
     {
-        if (stateFileToLoad != null)
+        internal static bool IsActive { get; private set; }
+        public static void StartState(string stateFileToLoad)
         {
-            using var good = new StreamReader(stateFileToLoad);
-            string? line;
-            while ((line = good.ReadLine()) != null)
+            if (stateFileToLoad != null)
             {
-                if (!line.StartsWith('#'))
+                using var good = new StreamReader(stateFileToLoad);
+                string? line;
+                while ((line = good.ReadLine()) != null)
                 {
-                    StateLines.Add(line);
+                    if (!line.StartsWith('#'))
+                    {
+                        StateLines.Add(line);
+                    }
                 }
             }
+            IsActive = true;
         }
-        IsActive = true;
-    }
 
-    public static List<string> StateLines { get; } = new();
-    public static List<string> OutputLines { get; } = new();
+        public static List<string> StateLines { get; } = new();
+        public static List<string> OutputLines { get; } = new();
 
-    private static int CurrentState = 0;
+        private static int CurrentState = 0;
 
-    internal static string LastCallMade = "";
+        internal static string LastCallMade = "";
 
-    public static void SaveZMachine(string fileToSaveTo)
-    {
-        if (IsActive)
+        public static void SaveZMachine(string fileToSaveTo)
         {
-            using var fs = new FileStream(fileToSaveTo, FileMode.Create);
-            fs.Write(FastMem.ZMData, 0, FastMem.ZMData.Length);
+            if (IsActive)
+            {
+                using var fs = new FileStream(fileToSaveTo, FileMode.Create);
+                fs.Write(FastMem.ZMData, 0, FastMem.ZMData.Length);
+            }
         }
-    }
 
-    private static int Seed = 0;
-    internal static int RandomSeed() => Seed++;
+        private static int Seed = 0;
+        internal static int RandomSeed() => Seed++;
+    }
 }

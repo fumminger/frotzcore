@@ -1,24 +1,26 @@
 ﻿using System.Xml;
 
-namespace Frotz.Other;
-
-public class ZMetaData
+namespace Frotz.Other
 {
-    public string RawMetaData { get; private set; }
-    public string? RawBiblographic { get; private set; } // TODO Remove this
 
-    public ZMetaData(string metadata)
+    public class ZMetaData
     {
-        RawMetaData = metadata;
+        public string RawMetaData { get; private set; }
+        public string? RawBiblographic { get; private set; } // TODO Remove this
 
-        XmlDocument doc = new();
-        doc.LoadXml(metadata);
-        var elements = doc.GetElementsByTagName("bibliographic");
-        //Console.WriteLine("NODE:" + elements.Count);
-
-        if (elements.Count > 0)
+        public ZMetaData(string metadata)
         {
-            RawBiblographic = elements[0]!.InnerXml;
+            RawMetaData = metadata;
+
+            XmlDocument doc = new();
+            doc.LoadXml(metadata);
+            var elements = doc.GetElementsByTagName("bibliographic");
+            //Console.WriteLine("NODE:" + elements.Count);
+
+            if (elements.Count > 0)
+            {
+                RawBiblographic = elements[0]!.InnerXml;
+            }
         }
     }
 }

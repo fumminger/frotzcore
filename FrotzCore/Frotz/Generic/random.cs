@@ -18,74 +18,76 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-namespace Frotz.Generic;
-
-internal static class Random
+namespace Frotz.Generic
 {
-    private static int A = 1; // TODO This was a long originally
 
-    private static int interval = 0;
-    private static int counter = 0;
-
-    /*
-     * seed_random
-     *         * Set the seed value for the random number generator.
-     *
-     */
-
-    internal static void SeedRandom(int value)
+    internal static class Random
     {
+        private static int A = 1; // TODO This was a long originally
 
-        if (value == 0)
-        {       /* ask interface for seed value */
-            A = OS.RandomSeed();
-            interval = 0;
-        }
-        else if (value < 1000)
-        {   /* special seed value */
-            counter = 0;
-            interval = value;
-        }
-        else
-        {           /* standard seed value */
-            A = value;
-            interval = 0;
-        }
+        private static int interval = 0;
+        private static int counter = 0;
 
-    }/* seed_random */
+        /*
+         * seed_random
+         *         * Set the seed value for the random number generator.
+         *
+         */
 
-    /*
-     * z_random, store a random number or set the random number seed.
-     *
-     *	zargs[0] = range (positive) or seed value (negative)
-     *
-     */
+        internal static void SeedRandom(int value)
+        {
 
-    internal static void ZRandom()
-    {
-        if ((short)Process.zargs[0] <= 0)
-        {   /* set random seed */
-
-            SeedRandom(-(short)Process.zargs[0]);
-            Process.Store(0);
-
-        }
-        else
-        {               /* generate random number */
-            zword result;
-
-            if (interval != 0)
-            {       /* ...in special mode */
-                result = (zword)counter++;
-                if (counter == interval) counter = 0;
+            if (value == 0)
+            {       /* ask interface for seed value */
+                A = OS.RandomSeed();
+                interval = 0;
+            }
+            else if (value < 1000)
+            {   /* special seed value */
+                counter = 0;
+                interval = value;
             }
             else
-            {           /* ...in standard mode */
-                A = 0x015a4e35 * A + 1;
-                result = (zword)((A >> 16) & 0x7fff);
+            {           /* standard seed value */
+                A = value;
+                interval = 0;
             }
 
-            Process.Store((zword)(result % Process.zargs[0] + 1));
-        }
-    }/* z_random */
+        }/* seed_random */
+
+        /*
+         * z_random, store a random number or set the random number seed.
+         *
+         *	zargs[0] = range (positive) or seed value (negative)
+         *
+         */
+
+        internal static void ZRandom()
+        {
+            if ((short)Process.zargs[0] <= 0)
+            {   /* set random seed */
+
+                SeedRandom(-(short)Process.zargs[0]);
+                Process.Store(0);
+
+            }
+            else
+            {               /* generate random number */
+                zword result;
+
+                if (interval != 0)
+                {       /* ...in special mode */
+                    result = (zword)counter++;
+                    if (counter == interval) counter = 0;
+                }
+                else
+                {           /* ...in standard mode */
+                    A = 0x015a4e35 * A + 1;
+                    result = (zword)((A >> 16) & 0x7fff);
+                }
+
+                Process.Store((zword)(result % Process.zargs[0] + 1));
+            }
+        }/* z_random */
+    }
 }

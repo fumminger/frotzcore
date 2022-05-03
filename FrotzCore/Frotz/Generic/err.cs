@@ -17,20 +17,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+using Frotz.Constants;
+
 using System;
 
-namespace Frotz.Generic;
-
-internal static class Err
+namespace Frotz.Generic
 {
-    /* Define stuff for stricter Z-code error checking, for the generic
-       Unix/DOS/etc terminal-window interface. Feel free to change the way
-       player prefs are specified, or replace report_zstrict_error() 
-       completely if you want to change the way errors are reported. */
 
-    internal static int ErrorReportMode = ErrorCodes.ERR_DEFAULT_REPORT_MODE;
-    private static readonly int[] error_count = new int[ErrorCodes.ERR_NUM_ERRORS];
-    private static readonly string[] err_messages = {
+    internal static class Err
+    {
+        /* Define stuff for stricter Z-code error checking, for the generic
+           Unix/DOS/etc terminal-window interface. Feel free to change the way
+           player prefs are specified, or replace report_zstrict_error() 
+           completely if you want to change the way errors are reported. */
+
+        internal static int ErrorReportMode = ErrorCodes.ERR_DEFAULT_REPORT_MODE;
+        private static readonly int[] error_count = new int[ErrorCodes.ERR_NUM_ERRORS];
+        private static readonly string[] err_messages = {
         "Text buffer overflow",
         "Store out of dynamic memory",
         "Division by zero",
@@ -66,89 +69,90 @@ internal static class Err
         "@get_next_prop called with object 0"
     };
 
-    //static void print_long (unsigned long value, int base);
+        //static void print_long (unsigned long value, int base);
 
-    /*
-     * init_err
-     *
-     * Initialise error reporting.
-     *
-     */
+        /*
+         * init_err
+         *
+         * Initialise error reporting.
+         *
+         */
 
-    internal static void InitErr() =>
-        /* Initialize the counters. */
-        error_count.AsSpan(0,ErrorCodes.ERR_NUM_ERRORS).Clear();
+        internal static void InitErr() =>
+            /* Initialize the counters. */
+            error_count.AsSpan(0, ErrorCodes.ERR_NUM_ERRORS).Clear();
 
-    /*
-     * runtime_error
-     *
-     * An error has occurred. Ignore it, pass it to os_fatal or report
-     * it according to err_report_mode.
-     *
-     * errnum : Numeric code for error (1 to ERR_NUM_ERRORS)
-     *
-     */
+        /*
+         * runtime_error
+         *
+         * An error has occurred. Ignore it, pass it to os_fatal or report
+         * it according to err_report_mode.
+         *
+         * errnum : Numeric code for error (1 to ERR_NUM_ERRORS)
+         *
+         */
 
-    internal static void RuntimeError(int errnum)
-    {
-        bool wasfirst;
-
-        if (errnum is <= 0 or > ErrorCodes.ERR_NUM_ERRORS)
-            return;
-
-        if (ErrorReportMode == ErrorCodes.ERR_REPORT_FATAL
-        || (Main.option_ignore_errors == false && errnum <= ErrorCodes.ERR_MAX_FATAL))
+        internal static void RuntimeError(int errnum)
         {
-            Buffer.FlushBuffer();
-            OS.Fatal(err_messages[errnum - 1]);
-            return;
-        }
+            bool wasfirst;
 
-        wasfirst = (error_count[errnum - 1] == 0);
-        error_count[errnum - 1]++;
+            if (errnum is <= 0 or > ErrorCodes.ERR_NUM_ERRORS)
+                return;
 
-        if ((ErrorReportMode == ErrorCodes.ERR_REPORT_ALWAYS)
-        || (ErrorReportMode == ErrorCodes.ERR_REPORT_ONCE && wasfirst))
-        {
-
-            FastMem.GetPc(out long pc);
-            Text.PrintString("Warning: ");
-            Text.PrintString(err_messages[errnum - 1]);
-            Text.PrintString(" (PC = ");
-            PrintLong(pc, 16);
-            Buffer.PrintChar(')');
-
-            if (ErrorReportMode == ErrorCodes.ERR_REPORT_ONCE)
+            if (ErrorReportMode == ErrorCodes.ERR_REPORT_FATAL
+            || (Main.option_ignore_errors == false && errnum <= ErrorCodes.ERR_MAX_FATAL))
             {
-                Text.PrintString(" (will ignore further occurrences)");
+                Buffer.FlushBuffer();
+                OS.Fatal(err_messages[errnum - 1]);
+                return;
             }
-            else
+
+            wasfirst = (error_count[errnum - 1] == 0);
+            error_count[errnum - 1]++;
+
+            if ((ErrorReportMode == ErrorCodes.ERR_REPORT_ALWAYS)
+            || (ErrorReportMode == ErrorCodes.ERR_REPORT_ONCE && wasfirst))
             {
-                Text.PrintString(" (occurrence ");
-                PrintLong(error_count[errnum - 1], 10);
+
+                FastMem.GetPc(out long pc);
+                Text.PrintString("Warning: ");
+                Text.PrintString(err_messages[errnum - 1]);
+                Text.PrintString(" (PC = ");
+                PrintLong(pc, 16);
                 Buffer.PrintChar(')');
+
+                if (ErrorReportMode == ErrorCodes.ERR_REPORT_ONCE)
+                {
+                    Text.PrintString(" (will ignore further occurrences)");
+                }
+                else
+                {
+                    Text.PrintString(" (occurrence ");
+                    PrintLong(error_count[errnum - 1], 10);
+                    Buffer.PrintChar(')');
+                }
+                Buffer.NewLine();
             }
-            Buffer.NewLine();
-        }
 
-    } /* report_error */
+        } /* report_error */
 
-    /*
-     * print_long
-     *
-     * Print an unsigned 32bit number in decimal or hex.
-     *
-     */
+        /*
+         * print_long
+         *
+         * Print an unsigned 32bit number in decimal or hex.
+         *
+         */
 
-    private static void PrintLong(long value, int base_val)
-    {
-        string s = string.Empty;
-        switch (base_val)
+        private static void PrintLong(long value, int base_val)
         {
-            case 10: s = value.ToString(); break;
-            case 16: s = value.ToString("X"); break;
-            default: OS.Fail("Unsupported print_long base"); break;
-        }
-        Text.PrintString(s);
-    }/* print_long */
+            string s = string.Empty;
+            switch (base_val)
+            {
+                case 10: s = value.ToString(); break;
+                case 16: s = value.ToString("X"); break;
+                default: OS.Fail("Unsupported print_long base"); break;
+            }
+            Text.PrintString(s);
+        }/* print_long */
+    }
 }

@@ -1,6 +1,8 @@
-﻿namespace Frotz.Screen;
-
-public readonly record struct CharDisplayInfo(int Font, int Style, int BackgroundColor, int ForegroundColor)
+﻿namespace Frotz.Screen
 {
-    public bool ImplementsStyle(int styleBit) => (Style & styleBit) == styleBit;
+
+    public readonly record struct CharDisplayInfo(int Font, int Style, int BackgroundColor, int ForegroundColor)
+    {
+        public bool ImplementsStyle(int styleBit) => (Style & styleBit) == styleBit;
+    }
 }

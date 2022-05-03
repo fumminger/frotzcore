@@ -25,172 +25,178 @@
  *    s.jokisch@avu.de
  *
  */
+using Frotz.Constants;
+
 using System;
 
-namespace Frotz.Generic;
+using zword = System.UInt16;
 
-public static class Main
+namespace Frotz.Generic
 {
-    public static string? StoryName { get; internal set; } = null;
 
-    internal static byte[]? StoryData = null;
-
-    internal static Story StoryId = Story.UNKNOWN;
-    internal static long StorySize = 0;
-
-    ///* Story file header data */
-
-    internal static zbyte h_version = 0;
-    internal static zbyte h_config = 0;
-    internal static zword h_release = 0;
-    internal static zword h_resident_size = 0;
-    internal static zword h_start_pc = 0;
-    internal static zword h_dictionary = 0;
-    internal static zword h_objects = 0;
-    internal static zword h_globals = 0;
-    internal static zword h_dynamic_size = 0;
-    internal static zword h_flags = 0;
-    internal static readonly zbyte[] h_serial = new zbyte[6];
-    internal static zword h_abbreviations = 0;
-    internal static zword h_file_size = 0;
-    internal static zword h_checksum = 0;
-    internal static zbyte h_interpreter_number = 0;
-    internal static zbyte h_interpreter_version = 0;
-    internal static zbyte h_screen_rows = 0;
-    internal static zbyte h_screen_cols = 0;
-    internal static zword h_screen_width = 0;
-    internal static zword h_screen_height = 0;
-    internal static zbyte h_font_height = 1;
-    internal static zbyte h_font_width = 1;
-    internal static zword h_functions_offset = 0;
-    internal static zword h_strings_offset = 0;
-    internal static zbyte h_default_background = 0;
-    internal static zbyte h_default_foreground = 0;
-    internal static zword h_terminating_keys = 0;
-    internal static zword h_line_width = 0;
-    internal static zbyte h_standard_high = 1;
-    internal static zbyte h_standard_low = 1;
-    internal static zword h_alphabet = 0;
-    internal static zword h_extension_table = 0;
-    internal static readonly zbyte[] h_user_name = new zbyte[8];
-
-    internal static zword hx_table_size = 0;
-    internal static zword hx_mouse_x = 0;
-    internal static zword hx_mouse_y = 0;
-    internal static zword hx_unicode_table = 0;
-    internal static zword hx_flags = 0;
-    internal static zword hx_fore_colour = 0;
-    internal static zword hx_back_colour = 0;
-
-    /* Stack data */
-
-    internal static zword[] Stack = new zword[General.STACK_SIZE];
-    internal static int sp = 0;
-    internal static int fp = 0;
-    internal static zword frame_count = 0;
-
-    /* IO streams */
-
-    internal static bool ostream_screen = true;
-    internal static bool ostream_script = false;
-    internal static bool ostream_memory = false;
-    internal static bool ostream_record = false;
-    internal static bool istream_replay = false;
-    internal static bool message = false;
-
-    /* Current window and mouse data */
-
-    internal static zword cwin = 0;
-    internal static int mwin = 0;
-
-    internal static zword MouseY = 0;
-    internal static zword MouseX = 0;
-    internal static zword menu_selected = 0;
-
-    /* Window attributes */
-
-    internal static bool enable_wrapping = false;
-    internal static bool enable_scripting = false;
-    internal static bool enable_scrolling = false;
-    internal static bool enable_buffering = false;
-
-    /* User options */
-
-    public static bool option_attribute_assignment = false;
-    public static bool option_attribute_testing = false;
-    public static zword option_context_lines = 0;
-    public static bool option_object_locating = false;
-    public static bool option_object_movement = false;
-    public static zword option_left_margin = 0;
-    public static zword option_right_margin = 0;
-    public static bool option_ignore_errors = false;
-    public static bool option_piracy = false;
-    public static int option_undo_slots = General.MAX_UNDO_SLOTS;
-    public static bool option_expand_abbreviations = false;
-    public static int option_script_cols = 80;
-    public static bool option_save_quetzal = true;
-    public static bool option_sound = true;
-    //' internal static char *option_zcode_path;
-
-    // TODO This is to allow the game to "cleanly" exit instead of Thread.Abort
-    public static bool AbortGameLoop = false;
-
-    /* Size of memory to reserve (in bytes) */
-
-    internal static long reserve_mem = 0;
-
-    /*
-     * z_piracy, branch if the story file is a legal copy.
-     *
-     *	no zargs used
-     *
-     */
-
-    internal static void ZPiracy()
+    public static class Main
     {
-        OS.Fail("hit piracy message");
+        public static string? StoryName { get; internal set; } = null;
 
-        Process.Branch(option_piracy == false);
-    }/* z_piracy */
+        internal static byte[]? StoryData = null;
 
-    /*
-     * main
-     *
-     * Prepare and run the game.
-     *
-     */
+        internal static Story StoryId = Story.UNKNOWN;
+        internal static long StorySize = 0;
 
-    public static int MainFunc(ReadOnlySpan<string> args)
-    {
-        if (OS.ProcessArguments(args))
+        ///* Story file header data */
+
+        internal static zbyte h_version = 0;
+        internal static zbyte h_config = 0;
+        internal static zword h_release = 0;
+        internal static zword h_resident_size = 0;
+        internal static zword h_start_pc = 0;
+        internal static zword h_dictionary = 0;
+        internal static zword h_objects = 0;
+        internal static zword h_globals = 0;
+        internal static zword h_dynamic_size = 0;
+        internal static zword h_flags = 0;
+        internal static readonly zbyte[] h_serial = new zbyte[6];
+        internal static zword h_abbreviations = 0;
+        internal static zword h_file_size = 0;
+        internal static zword h_checksum = 0;
+        internal static zbyte h_interpreter_number = 0;
+        internal static zbyte h_interpreter_version = 0;
+        internal static zbyte h_screen_rows = 0;
+        internal static zbyte h_screen_cols = 0;
+        internal static zword h_screen_width = 0;
+        internal static zword h_screen_height = 0;
+        internal static zbyte h_font_height = 1;
+        internal static zbyte h_font_width = 1;
+        internal static zword h_functions_offset = 0;
+        internal static zword h_strings_offset = 0;
+        internal static zbyte h_default_background = 0;
+        internal static zbyte h_default_foreground = 0;
+        internal static zword h_terminating_keys = 0;
+        internal static zword h_line_width = 0;
+        internal static zbyte h_standard_high = 1;
+        internal static zbyte h_standard_low = 1;
+        internal static zword h_alphabet = 0;
+        internal static zword h_extension_table = 0;
+        internal static readonly zbyte[] h_user_name = new zbyte[8];
+
+        internal static zword hx_table_size = 0;
+        internal static zword hx_mouse_x = 0;
+        internal static zword hx_mouse_y = 0;
+        internal static zword hx_unicode_table = 0;
+        internal static zword hx_flags = 0;
+        internal static zword hx_fore_colour = 0;
+        internal static zword hx_back_colour = 0;
+
+        /* Stack data */
+
+        internal static zword[] Stack = new zword[General.STACK_SIZE];
+        internal static int sp = 0;
+        internal static int fp = 0;
+        internal static zword frame_count = 0;
+
+        /* IO streams */
+
+        internal static bool ostream_screen = true;
+        internal static bool ostream_script = false;
+        internal static bool ostream_memory = false;
+        internal static bool ostream_record = false;
+        internal static bool istream_replay = false;
+        internal static bool message = false;
+
+        /* Current window and mouse data */
+
+        internal static zword cwin = 0;
+        internal static int mwin = 0;
+
+        internal static zword MouseY = 0;
+        internal static zword MouseX = 0;
+        internal static zword menu_selected = 0;
+
+        /* Window attributes */
+
+        internal static bool enable_wrapping = false;
+        internal static bool enable_scripting = false;
+        internal static bool enable_scrolling = false;
+        internal static bool enable_buffering = false;
+
+        /* User options */
+
+        public static bool option_attribute_assignment = false;
+        public static bool option_attribute_testing = false;
+        public static zword option_context_lines = 0;
+        public static bool option_object_locating = false;
+        public static bool option_object_movement = false;
+        public static zword option_left_margin = 0;
+        public static zword option_right_margin = 0;
+        public static bool option_ignore_errors = false;
+        public static bool option_piracy = false;
+        public static int option_undo_slots = General.MAX_UNDO_SLOTS;
+        public static bool option_expand_abbreviations = false;
+        public static int option_script_cols = 80;
+        public static bool option_save_quetzal = true;
+        public static bool option_sound = true;
+        //' internal static char *option_zcode_path;
+
+        // TODO This is to allow the game to "cleanly" exit instead of Thread.Abort
+        public static bool AbortGameLoop = false;
+
+        /* Size of memory to reserve (in bytes) */
+
+        internal static long reserve_mem = 0;
+
+        /*
+         * z_piracy, branch if the story file is a legal copy.
+         *
+         *	no zargs used
+         *
+         */
+
+        internal static void ZPiracy()
         {
-            Buffer.InitBuffer();
+            OS.Fail("hit piracy message");
 
-            Err.InitErr();
+            Process.Branch(option_piracy == false);
+        }/* z_piracy */
 
-            FastMem.InitMemory();
+        /*
+         * main
+         *
+         * Prepare and run the game.
+         *
+         */
 
-            Process.InitProcess();
+        public static int MainFunc(ReadOnlySpan<string> args)
+        {
+            if (OS.ProcessArguments(args))
+            {
+                Buffer.InitBuffer();
 
-            Sound.InitSound();
+                Err.InitErr();
 
-            Text.InitText();
+                FastMem.InitMemory();
 
-            OS.InitScreen();
+                Process.InitProcess();
 
-            FastMem.InitUndo();
+                Sound.InitSound();
 
-            FastMem.ZRestart();
+                Text.InitText();
 
-//            OS.GameStarted(); // New function; Called to allow the screen to know info about the game
+                OS.InitScreen();
 
-            Process.Interpret();
+                FastMem.InitUndo();
 
-            FastMem.ResetMemory();
+                FastMem.ZRestart();
 
-            //OS.ResetScreen();
-        }
-        return 0;
+                //            OS.GameStarted(); // New function; Called to allow the screen to know info about the game
 
-    }/* main */
+                Process.Interpret();
+
+                FastMem.ResetMemory();
+
+                //OS.ResetScreen();
+            }
+            return 0;
+
+        }/* main */
+    }
 }
