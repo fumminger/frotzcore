@@ -14,13 +14,30 @@
         }
     }
 
-    public readonly record struct ZPoint(int X, int Y)
+    public readonly struct ZPoint
     {
+        public readonly int X;
+        public readonly int Y;
+
+        public ZPoint(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
         public static implicit operator ZPoint(ValueTuple<int, int> pair) => new(pair.Item1, pair.Item2);
     }
 
-    public readonly record struct ZSize(int Height, int Width)
+    public readonly struct ZSize
     {
+        public readonly int Height;
+        public readonly int Width;
+
+        public ZSize(int height, int width)
+        {
+            Height = height;
+            Width = width;
+        }
         public ZSize(double height, double width) : this(Convert.ToInt32(height), Convert.ToInt32(width)) { }
 
         public static implicit operator ZSize(ValueTuple<int, int> pair)
@@ -32,8 +49,22 @@
         public static readonly ZSize Empty = new(0, 0);
     }
 
-    public readonly record struct ScreenMetrics(ZSize FontSize, ZSize WindowSize, int Rows, int Columns, int Scale)
+    public readonly struct ScreenMetrics
     {
+        public readonly ZSize FontSize;
+        public readonly ZSize WindowSize;
+        public readonly int Rows;
+        public readonly int Columns;
+        public readonly int Scale;
+
+        public ScreenMetrics(ZSize fontSize, ZSize windowSize, int rows, int columns, int scale)
+        {
+            FontSize = fontSize;
+            WindowSize = windowSize;
+            Rows = rows;
+            Columns = columns;
+            Scale = scale;
+        }
         public (int Rows, int Columnns) Dimensions => (Rows, Columns);
     }
 

@@ -22,6 +22,7 @@ using Frotz.Other;
 
 using System;
 
+using zbyte = System.Byte;
 using zword = System.UInt16;
 
 namespace Frotz.Generic
@@ -31,7 +32,22 @@ namespace Frotz.Generic
     {
         private const int current_window = 100;
 
-        private readonly record struct StoryInfo(Story story_id, int pic, int pic1, int pic2);
+        private readonly struct StoryInfo
+        {
+            public readonly Story story_id;
+            public readonly int pic;
+            public readonly int pic1;
+            public readonly int pic2;
+
+            public StoryInfo(Story sid, int p, int p1, int p2)
+            {
+                story_id = sid;
+                pic = p;
+                pic1 = p1;
+                pic2 = p2;
+
+            }
+        }
 
         private static readonly StoryInfo[] mapper = new StoryInfo[] {
         new(Story.ZORK_ZERO, 5, 497, 498),

@@ -1,4 +1,6 @@
-﻿namespace Frotz.Other
+﻿using zword = System.UInt16;
+
+namespace Frotz.Other
 {
 
     public class ZWindow // TODO I'd like to make this private again

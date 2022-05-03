@@ -22,6 +22,7 @@ using Frotz.Constants;
 using System;
 using System.Text;
 
+using zbyte = System.Byte;
 using zword = System.UInt16;
 
 namespace Frotz.Generic

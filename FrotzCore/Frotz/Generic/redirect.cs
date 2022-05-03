@@ -32,7 +32,21 @@ namespace Frotz.Generic
         private const byte MAX_NESTING = 16;
         private static int depth = -1;
 
-        private record struct RedirectStruct(zword XSize, zword Table, zword Width, zword Total);
+        private struct RedirectStruct
+        {
+            public zword XSize; 
+            public zword Table; 
+            public zword Width; 
+            public zword Total;
+
+            public RedirectStruct(zword xSize, zword table, zword width, zword total)
+            {
+                XSize = xSize;
+                Table = table;
+                Width = width;
+                Total = total;
+            }
+    }
 
         private static readonly RedirectStruct[] redirect = new RedirectStruct[MAX_NESTING];
 

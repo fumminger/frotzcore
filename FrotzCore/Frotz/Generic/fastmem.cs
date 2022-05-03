@@ -31,13 +31,25 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
+using zbyte = System.Byte;
 using zword = System.UInt16;
 
 namespace Frotz.Generic
 {
 
-    internal readonly record struct RecordStruct(Story StoryId, zword Release, string Serial);
+    internal readonly struct RecordStruct
+    {
+        public readonly Story StoryId;
+        public readonly zword Release;
+        public readonly string Serial;
 
+        public RecordStruct(Story storyId, zword release, string serial)
+        {
+            StoryId = storyId;
+            Release = release;
+            Serial = serial;
+        }
+    }
     internal static class FastMem
     {
         private static readonly RecordStruct[] Records = {
@@ -163,15 +175,31 @@ namespace Frotz.Generic
 
         //typedef struct undo_struct undo_t;
 
-        internal readonly record struct
-            UndoStruct(long Pc, long DiffSize, zword FrameCount, zword StackSize, zword FrameOffset, int Sp,
-                       zword[] Stack, byte[] UndoData) : IDisposable
+        internal readonly struct UndoStruct
         {
-            public void Dispose()
+            public readonly long Pc;
+            public readonly long DiffSize;
+            public readonly zword FrameCount;
+            public readonly zword StackSize;
+            public readonly zword FrameOffset;
+            public readonly int Sp;
+            public readonly zword[] Stack;
+            public readonly byte[] UndoData;
+ 
+       
+            public UndoStruct(long pc, long diffSize, zword frameCount, zword stackSize, zword frameOffset, int sp,
+            zword[] stack, byte[] undoData)
             {
-                // Stack?.Dispose();
-                // UndoData?.Dispose();
+                Pc = pc;
+                DiffSize = diffSize;
+                FrameCount = frameCount;
+                StackSize = stackSize;
+                FrameOffset = frameOffset;
+                Sp = sp;
+                Stack = stack;
+                UndoData = undoData;
             }
+
         }
 
         // static undo_struct first_undo = null, last_undo = null, curr_undo = null;
@@ -501,7 +529,6 @@ namespace Frotz.Generic
         {
             for (int i = 0; i < count; i++)
             {
-                UndoMem[0].Dispose();
                 UndoMem.RemoveAt(0);
             }
 
@@ -513,7 +540,6 @@ namespace Frotz.Generic
         internal static void ResetMemory()
         {
             StoryFp?.Dispose();
-            UndoMem.ForEach(x => x.Dispose());
             UndoMem.Clear();
         }
 
@@ -960,7 +986,6 @@ namespace Frotz.Generic
             //Frotz.Other.ArrayCopy.Copy(undo.stack, 0, Main.stack, undo.sp, undo.stack.Length);
 
             UndoMem.Remove(undo);
-            undo.Dispose();
 
             RestartHeader();
 

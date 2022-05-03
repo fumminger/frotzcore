@@ -19,6 +19,7 @@
  */
 using Frotz.Constants;
 
+using zbyte = System.Byte;
 using zword = System.UInt16;
 
 namespace Frotz.Generic

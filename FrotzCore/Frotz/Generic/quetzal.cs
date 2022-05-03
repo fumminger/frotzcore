@@ -25,7 +25,9 @@ using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.CompilerServices;
 
+using zbyte = System.Byte;
 using zword = System.UInt16;
+using zlong = System.UInt32;
 
 namespace Frotz.Generic
 {
