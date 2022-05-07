@@ -108,6 +108,14 @@ namespace Frotz.Generic
         internal static void StreamMssgOn()
         {
 
+            Buffer.FlushBuffer();
+
+            if (Main.ostream_screen)
+                Screen.ScreenMssgOn();
+            if (Main.ostream_script && Main.enable_scripting)
+                Files.ScriptMssgOn();
+
+            Main.message = true;
 
         }/* stream_mssg_on */
 
@@ -121,6 +129,14 @@ namespace Frotz.Generic
         internal static void StreamMssgOff()
         {
 
+            Buffer.FlushBuffer();
+
+            if (Main.ostream_screen)
+                Screen.ScreenMssgOff();
+            if (Main.ostream_script && Main.enable_scripting)
+                Files.ScriptMssgOff();
+
+            Main.message = false;
 
         }/* stream_mssg_off */
 
@@ -137,7 +153,37 @@ namespace Frotz.Generic
         {
             Buffer.FlushBuffer();
 
-
+            switch ((short)Process.zargs[0])
+            {
+                case 1:
+                    Main.ostream_screen = true;
+                    break;
+                case -1:
+                    Main.ostream_screen = false;
+                    break;
+                case 2:
+                    if (!Main.ostream_script)
+                        Files.ScriptOpen();
+                    break;
+                case -2:
+                    if (Main.ostream_script)
+                        Files.ScriptClose();
+                    break;
+                case 3:
+                    Redirect.MemoryOpen(Process.zargs[1], Process.zargs[2], Process.zargc >= 3);
+                    break;
+                case -3:
+                    Redirect.MemoryClose();
+                    break;
+                case 4:
+                    if (!Main.ostream_record)
+                        Files.RecordOpen();
+                    break;
+                case -4:
+                    if (Main.ostream_record)
+                        Files.RecordClose();
+                    break;
+            }
 
         }/* z_output_stream */
 
@@ -150,6 +196,12 @@ namespace Frotz.Generic
 
         internal static void StreamChar(zword c)
         {
+            if (Main.ostream_screen)
+                Screen.ScreenChar(c);
+            if (Main.ostream_script && Main.enable_scripting)
+                Files.ScriptChar(c);
+            if (Main.enable_scripting)
+                ScrollBackChar(c);
 
         }/* stream_char */
 
@@ -162,6 +214,20 @@ namespace Frotz.Generic
 
         internal static void StreamWord(ReadOnlySpan<zword> s)
         {
+            if (Main.ostream_memory && !Main.message)
+            {
+                Redirect.MemoryWord(s);
+            }
+            else
+            {
+
+                if (Main.ostream_screen)
+                    Screen.ScreenWord(s);
+                if (Main.ostream_script && Main.enable_scripting)
+                    Files.ScriptWord(s);
+                if (Main.enable_scripting)
+                    Stream.ScrollBackWord(s);
+            }
         }/* stream_word */
 
         /*
@@ -173,6 +239,20 @@ namespace Frotz.Generic
 
         internal static void NewLine()
         {
+
+            if (Main.ostream_memory && !Main.message)
+            {
+                Redirect.MemoryNewline();
+            }
+            else
+            {
+                if (Main.ostream_screen)
+                    Screen.ScreenNewline();
+                if (Main.ostream_script && Main.enable_scripting)
+                    Files.ScriptNewLine();
+                if (Main.enable_scripting)
+                    OS.ScrollbackChar('\n');
+            }
         }/* stream_new_line */
 
         /*
@@ -187,6 +267,10 @@ namespace Frotz.Generic
 
             Buffer.FlushBuffer();
 
+            if (Process.zargs[0] == 0 && Main.istream_replay)
+                Files.ReplayClose();
+            if (Process.zargs[0] == 1 && !Main.istream_replay)
+                Files.ReplayOpen();
 
         }/* z_input_stream */
 
@@ -206,6 +290,12 @@ namespace Frotz.Generic
 
         continue_input:
 
+            do
+            {
+
+                key = Main.istream_replay ? Files.ReplayReadKey() : Screen.ConsoleReadKey(timeout);
+
+            } while (key == CharCodes.ZC_BAD);
 
             /* Verify mouse clicks */
 
@@ -215,7 +305,10 @@ namespace Frotz.Generic
                     goto continue_input;
             }
 
+            /* Copy key to the command file */
 
+            if (Main.ostream_record && !Main.istream_replay)
+                Files.RecordWriteKey(key);
 
             /* Handle timeouts */
 
@@ -229,6 +322,11 @@ namespace Frotz.Generic
 
             if (hot_keys && key is >= CharCodes.ZC_HKEY_MIN and <= CharCodes.ZC_HKEY_MAX)
             {
+
+                if (Main.h_version == ZMachine.V4 && key == CharCodes.ZC_HKEY_UNDO)
+                    goto continue_input;
+                if (!Hotkey.HandleHotkey(key))
+                    goto continue_input;
 
             }
 
@@ -248,14 +346,31 @@ namespace Frotz.Generic
             zword key = CharCodes.ZC_BAD;
             bool no_scrollback = no_scripting;
 
+            if (Main.h_version == ZMachine.V6 && Main.StoryId == Story.UNKNOWN && !Main.ostream_script)
+                no_scrollback = false;
 
             Buffer.FlushBuffer();
 
+            /* Remove initial input from the transscript file or from the screen */
+
+            if (Main.ostream_script && Main.enable_scripting && !no_scripting)
+                Files.ScriptEraseInput(buf);
+            if (Main.enable_scripting && !no_scrollback)
+                Stream.ScrollbackEraseInput(buf);
+            if (Main.istream_replay)
+                Screen.ScreenEraseInput(buf);
 
             /* Read input line from current input stream */
 
             continue_input:
 
+            do
+            {
+                key = Main.istream_replay
+                    ? Files.ReplayReadInput(buf)
+                    : Screen.ConsoleReadInput(max, buf, timeout, key != CharCodes.ZC_BAD);
+
+            } while (key == CharCodes.ZC_BAD);
 
             /* Verify mouse clicks */
 
@@ -266,6 +381,9 @@ namespace Frotz.Generic
             }
 
             /* Copy input line to the command file */
+
+            if (Main.ostream_record && !Main.istream_replay)
+                Files.RecordWriteInput(buf, key);
 
             /* Handle timeouts */
 
@@ -279,9 +397,20 @@ namespace Frotz.Generic
 
             if (hot_keys && key is >= CharCodes.ZC_HKEY_MIN and <= CharCodes.ZC_HKEY_MAX)
             {
+                if (!Hotkey.HandleHotkey(key))
+                    goto continue_input;
 
                 return CharCodes.ZC_BAD;
             }
+
+            /* Copy input line to transscript file or to the screen */
+
+            if (Main.ostream_script && Main.enable_scripting && !no_scripting)
+                Files.ScriptWriteInput(buf, key);
+            if (Main.enable_scripting && !no_scrollback)
+                ScrollBackWriteInput(buf, key);
+            if (Main.istream_replay)
+                Screen.ScreenWriteInput(buf, key);
 
             /* Return terminating key */
 

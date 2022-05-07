@@ -89,9 +89,49 @@ namespace Frotz.Generic
 
         internal static zword TranslateFromZscii(zbyte c)
         {
-     
+            if (c == 0xfc)
+                return CharCodes.ZC_MENU_CLICK;
+            if (c == 0xfd)
+                return CharCodes.ZC_DOUBLE_CLICK;
+            if (c == 0xfe)
+                return CharCodes.ZC_SINGLE_CLICK;
 
-            return 0;
+            if (c >= 0x9b && Main.StoryId != Story.BEYOND_ZORK)
+            {
+                if (Main.hx_unicode_table != 0)
+                {   /* game has its own Unicode table */
+
+                    FastMem.LowByte(Main.hx_unicode_table, out zbyte N);
+
+                    if (c - 0x9b < N)
+                    {
+
+                        zword addr = (zword)(Main.hx_unicode_table + 1 + 2 * (c - 0x9b));
+
+                        FastMem.LowWord(addr, out zword unicode);
+
+                        if (unicode < 0x20)
+                            return '?';
+
+                        return unicode;
+
+                    }
+                    else
+                    {
+                        return '?';
+                    }
+                }
+                else if (c <= 0xdf) /* game uses standard set */
+                {
+                    return zscii_to_latin1[c - 0x9b];
+                }
+                else
+                {
+                    return '?';
+                }
+            }
+
+            return c;
 
         }/* translate_from_zscii */
 
@@ -104,8 +144,40 @@ namespace Frotz.Generic
 
         internal static zbyte UnicodeToZscii(zword c)
         {
-         
-            return (zbyte) 0;
+            int i;
+
+            if (c >= CharCodes.ZC_LATIN1_MIN)
+            {
+                if (Main.hx_unicode_table != 0)
+                {   /* game has its own Unicode table */
+
+                    FastMem.LowByte(Main.hx_unicode_table, out zbyte N);
+
+                    for (i = 0x9b; i < 0x9b + N; i++)
+                    {
+                        zword addr = (zword)(Main.hx_unicode_table + 1 + 2 * (i - 0x9b));
+
+                        FastMem.LowWord(addr, out zword unicode);
+
+                        if (c == unicode)
+                            return (zbyte)i;
+                    }
+
+                    return 0;
+                }
+                else
+                {   /* game uses standard set */
+                    for (i = 0x9b; i <= 0xdf; i++)
+                    {
+                        if (c == zscii_to_latin1[i - 0x9b])
+                            return (zbyte)i;
+                    }
+
+                    return 0;
+
+                }
+            }
+            return (zbyte)c;
 
         }/* unicode_to_zscii */
 
@@ -148,7 +220,34 @@ namespace Frotz.Generic
 
         private static zword Alphabet(int set, int index)
         {
-            return 0;
+            if (Main.h_version > ZMachine.V1 && set == 2 && index == 1)
+                return 0x0D;        /* always newline */
+
+            if (Main.h_alphabet != 0)
+            {   /* game uses its own alphabet */
+
+                zword addr = (zword)(Main.h_alphabet + 26 * set + index);
+                FastMem.LowByte(addr, out zbyte c);
+                return TranslateFromZscii(c);
+            }
+            else            /* game uses default alphabet */
+
+            if (set == 0)
+            {
+                return (zword)('a' + index);
+            }
+            else if (set == 1)
+            {
+                return (zword)('A' + index);
+            }
+            else if (Main.h_version == ZMachine.V1)
+            {
+                return _alphabet[index];
+            }
+            else
+            {
+                return _alphabet[index];
+            }
         }/* alphabet */
 
         /*
@@ -160,7 +259,21 @@ namespace Frotz.Generic
 
         internal static void FindResolution()
         {
-            
+            zword dct = Main.h_dictionary;
+
+            FastMem.LowByte(dct, out zbyte sep_count);
+            dct += (zword)(1 + sep_count);  /* skip word separators */
+            FastMem.LowByte(dct, out zbyte entry_len);
+
+            Resolution = (Main.h_version <= ZMachine.V3) ? 2 : 3;
+
+            if (2 * Resolution > entry_len)
+            {
+                Err.RuntimeError(ErrorCodes.ERR_DICT_LEN);
+            }
+
+            Decoded = new zword[3 * Resolution + 1];
+            Encoded = new zword[Resolution];
         }/* find_resolution */
 
         /*
@@ -184,8 +297,10 @@ namespace Frotz.Generic
             {
                 if (i < length)
                 {
+                    FastMem.LowByte(addr, out zbyte c);
                     addr++;
 
+                    decoded[i++] = TranslateFromZscii(c);
                 }
                 else
                 {
@@ -232,6 +347,29 @@ namespace Frotz.Generic
             Span<zbyte> zchars = stackalloc zbyte[3 * (Resolution + 1)];
             //                ptr = decoded;
 
+            /* Expand abbreviations that some old Infocom games lack */
+
+            if (Main.option_expand_abbreviations && Main.h_version <= ZMachine.V8)
+            {
+                if (padding == 0x05 && decoded[1] == 0)
+                {
+                    switch (decoded[0])
+                    {
+                        case 'g':
+                            decoded.AsSpan().Clear();
+                            again.CopyTo(decoded.AsSpan());
+                            break;
+                        case 'x':
+                            decoded.AsSpan().Clear();
+                            examine.CopyTo(decoded.AsSpan());
+                            break;
+                        case 'z':
+                            decoded.AsSpan().Clear();
+                            wait.CopyTo(decoded.AsSpan());
+                            break;
+                    }
+                }
+            }
 
             /* Translate string to a sequence of Z-characters */
 
@@ -274,6 +412,9 @@ namespace Frotz.Generic
 
                     /* Character found, store its index */
 
+                    if (set != 0)
+                        zchars[i++] = (zbyte)(((Main.h_version <= ZMachine.V2) ? 1 : 3) + set);
+
                     zchars[i++] = (zbyte)(index + 6);
 
                 }
@@ -314,6 +455,10 @@ namespace Frotz.Generic
                 if (c is 0x08 or 0x0d or 0x1b)
                     result = 2;
             }
+            else
+            {
+                result = c <= 0x7e ? (zword)3 : OS.CheckUnicode(Screen.GetWindowFont(Main.cwin), c);
+            }
 
             Process.Store(result);
 
@@ -341,6 +486,9 @@ namespace Frotz.Generic
 
             if (encoded.Length == 0)
                 throw new InvalidOperationException("Encoding not initialized.");
+
+            for (int i = 0; i < Resolution; i++)
+                FastMem.StoreW((zword)(Process.zargs[3] + 2 * i), encoded[i]);
 
         }/* z_encode_text */
 
@@ -371,7 +519,7 @@ namespace Frotz.Generic
             // zword* ptr;
             int byte_addr;
             zword c2;
-            zword code = 0;
+            zword code;
             zbyte c, prev_c = 0;
             int shift_state = 0;
             int shift_lock = 0;
@@ -390,6 +538,16 @@ namespace Frotz.Generic
             }
             else if (st == StringType.HIGH_STRING)
             {
+                byte_addr = Main.h_version switch
+                {
+                    <= ZMachine.V3 => addr << 1,
+                    <= ZMachine.V5 => addr << 2,
+                    <= ZMachine.V7 => (addr << 2) + (Main.h_strings_offset << 3),
+                    _ => addr << 3
+                };
+
+                if (byte_addr >= Main.StorySize)
+                    Err.RuntimeError(ErrorCodes.ERR_ILL_PRINT_ADDR);
             }
 
             /* Loop until a 16bit word has the highest bit set */
@@ -402,16 +560,17 @@ namespace Frotz.Generic
 
                 if (st is StringType.LOW_STRING or StringType.VOCABULARY)
                 {
-
+                    FastMem.LowWord(addr, out code);
                     addr += 2;
                 }
                 else if (st is StringType.HIGH_STRING or StringType.ABBREVIATION)
                 {
-
+                    FastMem.HighWord(byte_addr, out code);
                     byte_addr += 2;
                 }
                 else
                 {
+                    FastMem.CodeWord(out code);
                 }
 
                 /* Read its three Z-characters */
@@ -431,6 +590,14 @@ namespace Frotz.Generic
                             {
                                 status = 2;
                             }
+                            else if (Main.h_version == ZMachine.V1 && c == 1)
+                            {
+                                Buffer.NewLine();
+                            }
+                            else if (Main.h_version >= ZMachine.V2 && shift_state == 2 && c == 7)
+                            {
+                                Buffer.NewLine();
+                            }
                             else if (c >= 6)
                             {
                                 OutChar(st, Alphabet(shift_state, c - 6));
@@ -439,10 +606,20 @@ namespace Frotz.Generic
                             {
                                 OutChar(st, ' ');
                             }
+                            else if (Main.h_version >= ZMachine.V2 && c == 1)
+                            {
+                                status = 1;
+                            }
+                            else if (Main.h_version >= ZMachine.V3 && c <= 3)
+                            {
+                                status = 1;
+                            }
                             else
                             {
                                 shift_state = (shift_lock + (c & 1) + 1) % 3;
 
+                                if (Main.h_version <= ZMachine.V2 && c >= 4)
+                                    shift_lock = shift_state;
 
                                 break;
                             }
@@ -452,6 +629,11 @@ namespace Frotz.Generic
                             break;
 
                         case 1: /* abbreviation */
+
+                            ptr_addr = (zword)(Main.h_abbreviations + 64 * (prev_c - 1) + 2 * c);
+
+                            FastMem.LowWord(ptr_addr, out abbr_addr);
+                            DecodeText(StringType.ABBREVIATION, abbr_addr);
 
                             status = 0;
                             break;
@@ -534,8 +716,22 @@ namespace Frotz.Generic
 
             for (; ; )
             {
+                FastMem.LowWord(addr, out zword count);
                 addr += 2;
 
+                if (count == 0)
+                    break;
+
+                if (!first)
+                    Buffer.NewLine();
+
+                while (count-- > 0)
+                {
+                    FastMem.LowByte(addr, out zbyte c);
+                    addr++;
+
+                    Buffer.PrintChar(TranslateFromZscii(c));
+                }
 
                 first = false;
 
@@ -588,6 +784,24 @@ namespace Frotz.Generic
 
         internal static void PrintObject(zword object_var)
         {
+            zword addr = CObject.ObjectName(object_var);
+            zword code = 0x94a5;
+
+            FastMem.LowByte(addr, out zbyte length);
+            addr++;
+
+            if (length != 0)
+                FastMem.LowWord(addr, out code);
+
+            if (code == 0x94a5)
+            {   /* encoded text 0x94a5 == empty string */
+                PrintString("object#"); /* supply a generic name */
+                PrintNum(object_var);       /* for anonymous objects */
+            }
+            else
+            {
+                DecodeText(StringType.LOW_STRING, addr);
+            }
         }/* print_object */
 
         /*
@@ -670,8 +884,90 @@ namespace Frotz.Generic
          */
         internal static zword LookupText(int padding, zword dct)
         {
+            zword entry_addr;
+            zword entry;
+            zword addr;
+            int entry_number;
+            int lower, upper;
+            int i;
+            bool sorted;
 
-            return 0;
+            if (Resolution == 0) FindResolution();
+
+            Text.EncodeText(padding);
+
+            if (Encoded is null)
+                throw new InvalidOperationException("Encoding not initialized.");
+
+            FastMem.LowByte(dct, out zbyte sep_count);      /* skip word separators */
+            dct += (zword)(1 + sep_count);
+            FastMem.LowByte(dct, out zbyte entry_len);      /* get length of entries */
+            dct += 1;
+            FastMem.LowWord(dct, out zword entry_count);        /* get number of entries */
+            dct += 2;
+
+            if ((short)entry_count < 0)
+            {   /* bad luck, entries aren't sorted */
+                entry_count = (zword)(-(short)entry_count);
+                sorted = false;
+            }
+            else
+            {
+                sorted = true;      /* entries are sorted */
+            }
+
+            lower = 0;
+            upper = entry_count - 1;
+            var encoded = Encoded;
+
+            while (lower <= upper)
+            {
+                entry_number = sorted
+                    ? (lower + upper) / 2 /* binary search */
+                    : lower;              /* linear search */
+
+                entry_addr = (zword)(dct + entry_number * entry_len);
+
+                /* Compare word to dictionary entry */
+
+                addr = entry_addr;
+
+                for (i = 0; i < Resolution; i++)
+                {
+                    FastMem.LowWord(addr, out entry);
+                    if (encoded[i] != entry)
+                        goto continuing;
+                    addr += 2;
+                }
+
+                return entry_addr;      /* exact match found, return now */
+
+            continuing:
+
+                if (sorted)             /* binary search */
+                {
+                    if (encoded[i] > entry)
+                        lower = entry_number + 1;
+                    else
+                        upper = entry_number - 1;
+                }
+                else
+                {
+                    lower++;                           /* linear search */
+                }
+            }
+
+            /* No exact match has been found */
+
+            if (padding == 0x05)
+                return 0;
+
+            entry_number = (padding == 0x00) ? lower : upper;
+
+            if (entry_number == -1 || entry_number == entry_count)
+                return 0;
+
+            return (zword)(dct + entry_number * entry_len);
 
         }/* lookup_text */
 
@@ -688,6 +984,31 @@ namespace Frotz.Generic
          */
         private static void TokeniseText(zword text, zword length, zword from, zword parse, zword dct, bool flag)
         {
+            zword addr;
+
+            FastMem.LowByte(parse, out zbyte token_max);
+            parse++;
+            FastMem.LowByte(parse, out zbyte token_count);
+
+            if (token_count < token_max)
+            {   /* sufficient space left for token? */
+
+                FastMem.StoreB(parse++, (zbyte)(token_count + 1));
+
+                LoadString((zword)(text + from), length);
+
+                addr = LookupText(0x05, dct);
+
+                if (addr != 0 || !flag)
+                {
+                    parse += (zword)(4 * token_count); // Will parse get updated properly?
+
+                    FastMem.StoreW((zword)(parse + 0), addr);
+                    FastMem.StoreB((zword)(parse + 2), (zbyte)length);
+                    FastMem.StoreB((zword)(parse + 3), (zbyte)from);
+                }
+
+            }
 
         }/* tokenise_text */
 
@@ -706,8 +1027,15 @@ namespace Frotz.Generic
             zbyte c;
 
             length = 0;     /* makes compilers shut up */
+
+            /* Use standard dictionary if the given dictionary is zero */
+
+            if (dct == 0)
+                dct = Main.h_dictionary;
+
             /* Remove all tokens before inserting new ones */
 
+            FastMem.StoreB((zword)(token + 1), 0);
 
             /* Move the first pointer across the text buffer searching for the
                beginning of a word. If this succeeds, store the position in a
@@ -718,6 +1046,65 @@ namespace Frotz.Generic
             addr1 = text;
             addr2 = 0;
 
+            if (Main.h_version >= ZMachine.V5)
+            {
+                addr1++;
+                FastMem.LowByte(addr1, out length);
+            }
+
+            do
+            {
+                zword sep_addr;
+                zbyte separator;
+
+                /* Fetch next ZSCII character */
+
+                addr1++;
+
+                if (Main.h_version >= ZMachine.V5 && addr1 == text + 2 + length)
+                    c = 0;
+                else
+                    FastMem.LowByte(addr1, out c);
+
+                /* Check for separator */
+
+                sep_addr = dct;
+
+                FastMem.LowByte(sep_addr, out zbyte sep_count);
+                sep_addr++;
+
+                do
+                {
+                    FastMem.LowByte(sep_addr, out separator);
+                    sep_addr++;
+                } while (c != separator && --sep_count != 0);
+
+                /* This could be the start or the end of a word */
+
+                if (sep_count == 0 && c != ' ' && c != 0)
+                {
+                    if (addr2 == 0)
+                        addr2 = addr1;
+                }
+                else if (addr2 != 0)
+                {
+                    TokeniseText(text,
+                        (zword)(addr1 - addr2),
+                        (zword)(addr2 - text),
+                        token, dct, flag);
+
+                    addr2 = 0;
+                }
+
+                /* Translate separator (which is a word in its own right) */
+
+                if (sep_count != 0)
+                {
+                    TokeniseText(text, 1,
+                        (zword)(addr1 - text),
+                        token, dct, flag);
+                }
+            } while (c != 0);
 
         }/* tokenise_line */
 
@@ -801,7 +1188,17 @@ namespace Frotz.Generic
             }
             decoded[len] = 0;
 
+            /* Search the dictionary for first and last possible extensions */
+
+            minaddr = LookupText(0x00, Main.h_dictionary);
+            maxaddr = LookupText(0x1f, Main.h_dictionary);
+
+            if (minaddr == 0 || maxaddr == 0 || minaddr > maxaddr)
+                return 2;
+
             /* Copy first extension to "result" string */
+
+            DecodeText(StringType.VOCABULARY, minaddr);
 
             // ptr = result;
             var temp = new StringBuilder(len);
@@ -810,6 +1207,8 @@ namespace Frotz.Generic
                 temp.Append(c);
 
             /* Merge second extension with "result" string */
+
+            DecodeText(StringType.VOCABULARY, maxaddr);
 
             int ptr = 0;
 
@@ -824,7 +1223,7 @@ namespace Frotz.Generic
 
             result = temp.ToString();
 
-            return 0;
+            return (minaddr == maxaddr) ? 0 : 1;
 
         }/* completion */
 

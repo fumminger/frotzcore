@@ -1,5 +1,6 @@
 ﻿
 using Frotz.Constants;
+using Frotz.Generic;
 
 using System;
 using System.IO;
@@ -43,6 +44,92 @@ namespace Frotz
          */
         public static void InitScreen()
         {
+            // TODO Really need to clean this up
+
+            Main.h_interpreter_number = 4;
+
+            // Set the configuration
+            if (Main.h_version == ZMachine.V3)
+            {
+                Main.h_config |= ZMachine.CONFIG_SPLITSCREEN;
+                Main.h_config |= ZMachine.CONFIG_PROPORTIONAL;
+                // TODO Set Tandy bit here if appropriate
+            }
+            if (Main.h_version >= ZMachine.V4)
+            {
+                Main.h_config |= ZMachine.CONFIG_BOLDFACE;
+                Main.h_config |= ZMachine.CONFIG_EMPHASIS;
+                Main.h_config |= ZMachine.CONFIG_FIXED;
+                Main.h_config |= ZMachine.CONFIG_TIMEDINPUT;
+            }
+            if (Main.h_version >= ZMachine.V5)
+            {
+                Main.h_config |= ZMachine.CONFIG_COLOUR;
+            }
+            //theApp.CopyUsername();
+
+            Main.h_interpreter_version = (byte)'F';
+            if (Main.h_version == ZMachine.V6)
+            {
+                Main.h_default_background = ZColor.BLACK_COLOUR;
+                Main.h_default_foreground = ZColor.WHITE_COLOUR;
+                // TODO Get the defaults from the application itself
+            }
+            else
+            {
+                Main.h_default_foreground = 1;
+                Main.h_default_background = 1;
+            }
+
+            // TODO Clear out the input queue incase a quit left characters
+
+            // TODO Set font to be default fixed width font
+
+            // TODO Make these numbers not be totally made up
+
+            // BEGIN WARNING May be obsolete from dumb_init_*() functions
+            Main.h_screen_width = 80 * 8;
+            Main.h_screen_height = 25 * 8;
+
+            Main.h_screen_cols = 80;
+            Main.h_screen_rows = 25;
+
+            Main.h_font_width = 8;
+            Main.h_font_height = 8;
+            // END WARNING 
+
+            // Check for sound
+            if ((Main.h_version == ZMachine.V3) && ((Main.h_flags & ZMachine.OLD_SOUND_FLAG) != 0))
+            {
+                // TODO Config sound here if appropriate
+            }
+            else if ((Main.h_version >= ZMachine.V4) && ((Main.h_flags & ZMachine.SOUND_FLAG) != 0))
+            {
+                // TODO Config sound here if appropriate
+            }
+
+            if (Main.h_version >= ZMachine.V5)
+            {
+                ushort mask = 0;
+                if (Main.h_version == ZMachine.V6) mask |= ZMachine.TRANSPARENT_FLAG;
+
+                // Mask out any unsupported bits in the extended flags
+                Main.hx_flags &= mask;
+
+                // TODO Set fore & back color here if apporpriate
+                //  hx_fore_colour = 
+                //  hx_back_colour = 
+            }
+
+
+            string name = Main.StoryName ?? "UNKNOWN";
+            // Set default filenames
+
+            FastMem.SaveName = $"{name}.sav";
+            Files.ScriptName = $"{name}.log";
+            Files.CommandName = $"{name}.rec";
+            FastMem.AuxilaryName = $"{name}.aux";
+
             dumb_init_input();
             dumb_init_output();
             dumb_init_pictures();
@@ -72,6 +159,28 @@ namespace Frotz
          */
         public static bool ProcessArguments(ReadOnlySpan<string> args)
         {
+            // WARNING : Have not ported the Frotz code, most arguments are not handled
+
+            Main.StoryData = null;
+
+            if (args.Length == 0)
+            {
+                var file = SelectGameFile();
+                if (!file.HasValue)
+                    return false;
+
+                (Main.StoryName, Main.StoryData) = file.GetValueOrDefault();
+            }
+            else
+            {
+                Main.StoryName = args[0];
+                using var fs = new FileStream(args[0], FileMode.Open);
+                var data = new byte[fs.Length];
+                fs.Read(data, 0, (int)fs.Length);
+                Main.StoryData = data;
+            }
+
+            Err.ErrorReportMode = ErrorCodes.ERR_REPORT_NEVER;
             return true;
         }
 
@@ -101,6 +210,15 @@ namespace Frotz
          */
         public static void RestartGame(int stage)
         {
+            // Show Beyond Zork's title screen
+            if ((stage == ZMachine.RESTART_BEGIN) && (Main.StoryId == Story.BEYOND_ZORK))
+            {
+                if (OS.PictureData(1, out int _, out int _))
+                {
+                    OS.DrawPicture(1, 1, 1);
+                    OS.ReadKey(0, false);
+                }
+            }
         }
 
 
