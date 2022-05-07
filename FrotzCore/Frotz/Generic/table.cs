@@ -48,25 +48,20 @@ namespace Frotz.Generic
 
             if (Process.zargs[1] == 0)                                          /* zero table */
             {
-                for (i = 0; i < size; i++)
-                    FastMem.StoreB((zword)(Process.zargs[0] + i), 0);
+
             }
             else if ((short)size < 0 || Process.zargs[0] > Process.zargs[1])    /* copy forwards */
             {
                 for (i = 0; i < (((short)size < 0) ? -(short)size : size); i++)
                 {
-                    addr = (zword)(Process.zargs[0] + i);
-                    FastMem.LowByte(addr, out value);
-                    FastMem.StoreB((zword)(Process.zargs[1] + i), value);
+
                 }
             }
             else                                                                /* copy backwards */
             {
                 for (i = size - 1; i >= 0; i--)
                 {
-                    addr = (zword)(Process.zargs[0] + i);
-                    FastMem.LowByte(addr, out value);
-                    FastMem.StoreB((zword)(Process.zargs[1] + i), value);
+
                 }
             }
         } /* z_copy_table */
@@ -80,9 +75,7 @@ namespace Frotz.Generic
          */
         internal static void ZLoadB()
         {
-            zword addr = (zword)(Process.zargs[0] + Process.zargs[1]);
-            FastMem.LowByte(addr, out byte value);
-            Process.Store(value);
+
         } /* z_loadb */
 
         /*
@@ -95,9 +88,7 @@ namespace Frotz.Generic
 
         internal static void ZLoadW()
         {
-            zword addr = (zword)(Process.zargs[0] + 2 * Process.zargs[1]);
-            FastMem.LowWord(addr, out ushort value);
-            Process.Store(value);
+
         } /* z_loadw */
 
         /*
@@ -128,18 +119,12 @@ namespace Frotz.Generic
             {
                 if ((Process.zargs[3] & 0x80) > 0)
                 {   /* scan word array */
-                    FastMem.LowWord(addr, out ushort wvalue);
 
-                    if (wvalue == Process.zargs[0])
-                        goto finished;
 
                 }
                 else
                 {   /* scan byte array */
-                    FastMem.LowByte(addr, out byte bvalue);
 
-                    if (bvalue == Process.zargs[0])
-                        goto finished;
                 }
 
                 addr += (zword)(Process.zargs[3] & 0x7f);
@@ -162,7 +147,7 @@ namespace Frotz.Generic
          *
          */
 
-        internal static void ZStoreB() => FastMem.StoreB((zword)(Process.zargs[0] + Process.zargs[1]), (byte)Process.zargs[2]); /* z_storeb */
+        internal static void ZStoreB() { } /* z_storeb */
 
         /*
          * z_storew, write a word into a table of words.
@@ -172,6 +157,6 @@ namespace Frotz.Generic
          *	zargs[2] = value to be written
          *
          */
-        internal static void ZStoreW() => FastMem.StoreW((zword)(Process.zargs[0] + 2 * Process.zargs[1]), Process.zargs[2]); /* z_storew */
+        internal static void ZStoreW() { } /* z_storew */
     }
 }

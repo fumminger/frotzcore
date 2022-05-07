@@ -10,43 +10,22 @@
     <RootNamespace>Frotz</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Properties\**" />
-    <Compile Remove="Screen\**" />
-    <Compile Remove="TestStuff\**" />
     <Compile Remove="ZTools\**" />
-    <EmbeddedResource Remove="Properties\**" />
-    <EmbeddedResource Remove="Screen\**" />
-    <EmbeddedResource Remove="TestStuff\**" />
     <EmbeddedResource Remove="ZTools\**" />
-    <None Remove="Properties\**" />
-    <None Remove="Screen\**" />
-    <None Remove="TestStuff\**" />
     <None Remove="ZTools\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Extensions.cs" />
     <Compile Remove="Frotz\Generic\fastmem.cs" />
     <Compile Remove="Frotz\Generic\files.cs" />
     <Compile Remove="Frotz\Generic\GameControl.cs" />
     <Compile Remove="Frotz\Generic\getopt.cs" />
     <Compile Remove="Frotz\Generic\hotkey.cs" />
-    <Compile Remove="Frotz\Generic\main.cs" />
     <Compile Remove="Frotz\Generic\math.cs" />
     <Compile Remove="Frotz\Generic\object.cs" />
     <Compile Remove="Frotz\Generic\quetzal.cs" />
     <Compile Remove="Frotz\Generic\random.cs" />
     <Compile Remove="Frotz\Generic\redirect.cs" />
     <Compile Remove="Frotz\Generic\sound.cs" />
-    <Compile Remove="Frotz\Generic\table.cs" />
-    <Compile Remove="Frotz\Generic\variable.cs" />
-    <Compile Remove="Frotz\Other\BlorbFiles.cs" />
-    <Compile Remove="Frotz\Other\GraphicsFont.cs" />
-    <Compile Remove="Frotz\Other\PNG.cs" />
-    <Compile Remove="Frotz\Other\TrueColorStuff.cs" />
-    <Compile Remove="GlobalUsings.cs" />
-    <Compile Remove="os_WPF.cs" />
-    <Compile Remove="Utilities.cs" />
-    <Compile Remove="ValueStringBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="FrotzCoreConsole.deps.json" />

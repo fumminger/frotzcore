@@ -173,20 +173,12 @@ namespace Frotz.Generic
 
                 Err.InitErr();
 
-                FastMem.InitMemory();
 
 
 
                 OS.InitScreen();
 
-                FastMem.InitUndo();
 
-                FastMem.ZRestart();
-
-                //            OS.GameStarted(); // New function; Called to allow the screen to know info about the game
-
-
-                FastMem.ResetMemory();
 
                 //OS.ResetScreen();
             }

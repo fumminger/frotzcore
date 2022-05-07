@@ -46,9 +46,6 @@ namespace Frotz.Generic
             else
             {
                 zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out ushort value);
-                value--;
-                FastMem.SetWord(addr, value);
             }
 
         }/* z_dec */
@@ -76,9 +73,7 @@ namespace Frotz.Generic
             else
             {
                 zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out value);
-                value--;
-                FastMem.SetWord(addr, value);
+                value = 0;
             }
 
             Process.Branch((short)value < (short)Process.zargs[1]);
@@ -105,9 +100,6 @@ namespace Frotz.Generic
             else
             {
                 zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out ushort value);
-                value++;
-                FastMem.SetWord(addr, value);
             }
 
         }/* z_inc */
@@ -135,9 +127,7 @@ namespace Frotz.Generic
             else
             {
                 zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out value);
-                value++;
-                FastMem.SetWord(addr, value);
+                value = 0;
             }
 
             Process.Branch((short)value > (short)Process.zargs[1]);
@@ -153,7 +143,7 @@ namespace Frotz.Generic
 
         internal static void ZLoad()
         {
-            zword value;
+            zword value = 0;
 
             if (Process.zargs[0] == 0)
             {
@@ -166,7 +156,6 @@ namespace Frotz.Generic
             else
             {
                 zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.LowWord(addr, out value);
             }
 
             Process.Store(value);
@@ -198,10 +187,6 @@ namespace Frotz.Generic
 
                 zword addr = Process.zargs[1];
 
-                FastMem.LowWord(addr, out ushort size);
-
-                size += Process.zargs[0];
-                FastMem.StoreW(addr, size);
 
             }
             else
@@ -242,24 +227,15 @@ namespace Frotz.Generic
                 }
                 else
                 {
-                    zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                    FastMem.SetWord(addr, value);
+
                 }
             }
             else
             {   /* it's V6, but is there a user stack? */
                 if (Process.zargc == 1)
                 {   /* it's a user stack */
-
-                    zword addr = Process.zargs[0];
-
-                    FastMem.LowWord(addr, out ushort size);
-
-                    size++;
-                    FastMem.StoreW(addr, size);
-
-                    addr += (zword)(2 * size);
-                    FastMem.LowWord(addr, out value);
+                    value = 0;
+               
                 }
                 else
                 {
@@ -297,17 +273,7 @@ namespace Frotz.Generic
         {
             zword addr = Process.zargs[1];
 
-            FastMem.LowWord(addr, out ushort size);
 
-            if (size != 0)
-            {
-                FastMem.StoreW((zword)(addr + 2 * size), Process.zargs[0]);
-
-                size--;
-                FastMem.StoreW(addr, size);
-            }
-
-            Process.Branch(size > 0); // TODO I think that's what's expected here
 
         }/* z_push_stack */
 
@@ -334,7 +300,7 @@ namespace Frotz.Generic
             else
             {
                 zword addr = (zword)(Main.h_globals + 2 * (Process.zargs[0] - 16));
-                FastMem.SetWord(addr, value);
+
             }
 
         }/* z_store */
