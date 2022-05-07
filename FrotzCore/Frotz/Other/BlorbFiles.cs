@@ -98,6 +98,19 @@ namespace Frotz.Blorb
             _level--;
         }
 
+        private static bool Matches(ReadOnlySpan<byte> bytes, ReadOnlySpan<char> chars)
+        {
+            if (bytes.Length != chars.Length)
+                return false;
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                if (bytes[i] != chars[i])
+                    return false;
+            }
+
+            return true;
+        }
         private static void ReadChunk(Blorb blorb, Stream stream, int start, int length, ReadOnlySpan<char> type, IDictionary<int, Chunk> chunks)
         {
             byte[]? rentedFromPool = null;
@@ -121,7 +134,7 @@ namespace Frotz.Blorb
                             break;
                         case BlorbUsage.Snd:
                             {
-                                if (buffer.Slice(0, 4).Matches(stackalloc char[] { 'A', 'I', 'F', 'F' }))
+                                if (Matches(buffer.Slice(0, 4), stackalloc char[] { 'A', 'I', 'F', 'F' }))
                                 {
                                     byte[] temp = new byte[buffer.Length + 8];
 

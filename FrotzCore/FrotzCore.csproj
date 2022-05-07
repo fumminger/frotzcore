@@ -15,7 +15,10 @@
     <None Remove="ZTools\**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Extensions.cs" />
+    <Compile Remove="GlobalUsings.cs" />
     <Compile Remove="os_WPF.cs" />
+    <Compile Remove="TestStuff\DebugState.cs" />
     <Compile Remove="Utilities.cs" />
     <Compile Remove="ValueStringBuilder.cs" />
   </ItemGroup>
@@ -24,5 +27,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TestStuff\" />
   </ItemGroup>
 </Project>

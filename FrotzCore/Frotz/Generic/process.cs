@@ -180,7 +180,6 @@ namespace Frotz.Generic
         private static int invokeCount = 0;
         private static void PrivateInvoke(ZInstruction instruction, string array, int index, int opcode)
         {
-            DebugState.LastCallMade = instruction.Method.Name + ":" + opcode;
             instruction.Invoke();
             invokeCount++;
         }

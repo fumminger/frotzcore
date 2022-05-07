@@ -201,15 +201,8 @@ namespace Frotz
          */
         public static int RandomSeed()
         {
-            if (DebugState.IsActive)
-            {
-                return DebugState.RandomSeed();
-            }
-            else
-            {
-                var r = new System.Random();
-                return r.Next() & 32767;
-            }
+            var r = new System.Random();
+            return r.Next() & 32767;
         }
 
         /*
