@@ -17,11 +17,7 @@
   <ItemGroup>
     <Compile Remove="Frotz\Generic\fastmem.cs" />
     <Compile Remove="Frotz\Generic\files.cs" />
-    <Compile Remove="Frotz\Generic\GameControl.cs" />
-    <Compile Remove="Frotz\Generic\getopt.cs" />
     <Compile Remove="Frotz\Generic\hotkey.cs" />
-    <Compile Remove="Frotz\Generic\math.cs" />
-    <Compile Remove="Frotz\Generic\object.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="FrotzCoreConsole.deps.json" />
