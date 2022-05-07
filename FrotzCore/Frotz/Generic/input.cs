@@ -158,12 +158,6 @@ namespace Frotz.Generic
 
             addr = Process.zargs[0];
 
-            FastMem.LowByte(addr, out zbyte max);
-
-
-            if (max >= General.INPUT_BUFFER_SIZE)
-                max = General.INPUT_BUFFER_SIZE - 1;
-    
 
 
         }/* z_read */

@@ -184,10 +184,8 @@ namespace Frotz.Generic
             {
                 if (i < length)
                 {
-                    FastMem.LowByte(addr, out zbyte c);
                     addr++;
 
-                    decoded[i++] = TranslateFromZscii(c);
                 }
                 else
                 {
@@ -344,9 +342,6 @@ namespace Frotz.Generic
             if (encoded.Length == 0)
                 throw new InvalidOperationException("Encoding not initialized.");
 
-            for (int i = 0; i < Resolution; i++)
-                FastMem.StoreW((zword)(Process.zargs[3] + 2 * i), encoded[i]);
-
         }/* z_encode_text */
 
         /*
@@ -376,7 +371,7 @@ namespace Frotz.Generic
             // zword* ptr;
             int byte_addr;
             zword c2;
-            zword code;
+            zword code = 0;
             zbyte c, prev_c = 0;
             int shift_state = 0;
             int shift_lock = 0;
@@ -407,17 +402,16 @@ namespace Frotz.Generic
 
                 if (st is StringType.LOW_STRING or StringType.VOCABULARY)
                 {
-                    FastMem.LowWord(addr, out code);
+
                     addr += 2;
                 }
                 else if (st is StringType.HIGH_STRING or StringType.ABBREVIATION)
                 {
-                    FastMem.HighWord(byte_addr, out code);
+
                     byte_addr += 2;
                 }
                 else
                 {
-                    FastMem.CodeWord(out code);
                 }
 
                 /* Read its three Z-characters */
@@ -540,22 +534,8 @@ namespace Frotz.Generic
 
             for (; ; )
             {
-                FastMem.LowWord(addr, out zword count);
                 addr += 2;
 
-                if (count == 0)
-                    break;
-
-                if (!first)
-                    Buffer.NewLine();
-
-                while (count-- > 0)
-                {
-                    FastMem.LowByte(addr, out zbyte c);
-                    addr++;
-
-                    Buffer.PrintChar(TranslateFromZscii(c));
-                }
 
                 first = false;
 
@@ -690,90 +670,8 @@ namespace Frotz.Generic
          */
         internal static zword LookupText(int padding, zword dct)
         {
-            zword entry_addr;
-            zword entry;
-            zword addr;
-            int entry_number;
-            int lower, upper;
-            int i;
-            bool sorted;
 
-            if (Resolution == 0) FindResolution();
-
-            Text.EncodeText(padding);
-
-            if (Encoded is null)
-                throw new InvalidOperationException("Encoding not initialized.");
-
-            FastMem.LowByte(dct, out zbyte sep_count);      /* skip word separators */
-            dct += (zword)(1 + sep_count);
-            FastMem.LowByte(dct, out zbyte entry_len);      /* get length of entries */
-            dct += 1;
-            FastMem.LowWord(dct, out zword entry_count);        /* get number of entries */
-            dct += 2;
-
-            if ((short)entry_count < 0)
-            {   /* bad luck, entries aren't sorted */
-                entry_count = (zword)(-(short)entry_count);
-                sorted = false;
-            }
-            else
-            {
-                sorted = true;      /* entries are sorted */
-            }
-
-            lower = 0;
-            upper = entry_count - 1;
-            var encoded = Encoded;
-
-            while (lower <= upper)
-            {
-                entry_number = sorted
-                    ? (lower + upper) / 2 /* binary search */
-                    : lower;              /* linear search */
-
-                entry_addr = (zword)(dct + entry_number * entry_len);
-
-                /* Compare word to dictionary entry */
-
-                addr = entry_addr;
-
-                for (i = 0; i < Resolution; i++)
-                {
-                    FastMem.LowWord(addr, out entry);
-                    if (encoded[i] != entry)
-                        goto continuing;
-                    addr += 2;
-                }
-
-                return entry_addr;      /* exact match found, return now */
-
-            continuing:
-
-                if (sorted)             /* binary search */
-                {
-                    if (encoded[i] > entry)
-                        lower = entry_number + 1;
-                    else
-                        upper = entry_number - 1;
-                }
-                else
-                {
-                    lower++;                           /* linear search */
-                }
-            }
-
-            /* No exact match has been found */
-
-            if (padding == 0x05)
-                return 0;
-
-            entry_number = (padding == 0x00) ? lower : upper;
-
-            if (entry_number == -1 || entry_number == entry_count)
-                return 0;
-
-            return (zword)(dct + entry_number * entry_len);
+            return 0;
 
         }/* lookup_text */
 
@@ -790,31 +688,6 @@ namespace Frotz.Generic
          */
         private static void TokeniseText(zword text, zword length, zword from, zword parse, zword dct, bool flag)
         {
-            zword addr;
-
-            FastMem.LowByte(parse, out zbyte token_max);
-            parse++;
-            FastMem.LowByte(parse, out zbyte token_count);
-
-            if (token_count < token_max)
-            {   /* sufficient space left for token? */
-
-                FastMem.StoreB(parse++, (zbyte)(token_count + 1));
-
-                LoadString((zword)(text + from), length);
-
-                addr = LookupText(0x05, dct);
-
-                if (addr != 0 || !flag)
-                {
-                    parse += (zword)(4 * token_count); // Will parse get updated properly?
-
-                    FastMem.StoreW((zword)(parse + 0), addr);
-                    FastMem.StoreB((zword)(parse + 2), (zbyte)length);
-                    FastMem.StoreB((zword)(parse + 3), (zbyte)from);
-                }
-
-            }
 
         }/* tokenise_text */
 
@@ -835,7 +708,6 @@ namespace Frotz.Generic
             length = 0;     /* makes compilers shut up */
             /* Remove all tokens before inserting new ones */
 
-            FastMem.StoreB((zword)(token + 1), 0);
 
             /* Move the first pointer across the text buffer searching for the
                beginning of a word. If this succeeds, store the position in a

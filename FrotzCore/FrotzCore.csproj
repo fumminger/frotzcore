@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Extensions.cs" />
+    <Compile Remove="Frotz\Generic\fastmem.cs" />
     <Compile Remove="Frotz\Generic\files.cs" />
     <Compile Remove="Frotz\Generic\GameControl.cs" />
     <Compile Remove="Frotz\Generic\getopt.cs" />

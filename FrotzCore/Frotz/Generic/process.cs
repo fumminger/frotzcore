@@ -43,15 +43,11 @@ namespace Frotz.Generic
             new(Text.ZPrint),
             new(Text.ZPrintRet),
             new(ZNoop),
-            new(FastMem.ZSave),
-            new(FastMem.ZRestore),
-            new(FastMem.ZRestart),
             new(ZRetPopped),
             new(ZCatch),
             new(ZQuit),
             new(Text.ZNewLine),
             new(Screen.ZShowStatus),
-            new(FastMem.ZVerify), // Not Tested or Implemented
             new(__extended__),
         };
 
@@ -102,15 +98,11 @@ namespace Frotz.Generic
 
         internal static readonly ZInstruction[] ext_opcodes = new ZInstruction[]
         {
-            new(FastMem.ZSave),
-            new(FastMem.ZRestore),
             new(Screen.ZSetFont),
             new(Screen.ZDrawPicture),
             new(Screen.ZPictureData),
             new(Screen.ZErasePicture),
             new(Screen.ZSetMargins),
-            new(FastMem.ZSaveUndo),
-            new(FastMem.ZRestoreUndo),//    z_restore_undo, // 10
             new(Text.ZPrintUnicode),
             new(Text.ZCheckUnicode),
             new(Screen.ZSetTrueColor),	/* spec 1.1 */
@@ -154,27 +146,6 @@ namespace Frotz.Generic
 
         private static void LoadOperand(zbyte type)
         {
-            zword value;
-
-            if ((type & 2) > 0)
-            {           /* variable */
-
-                FastMem.CodeByte(out zbyte variable);
-
-
-            }
-            else if ((type & 1) > 0)
-            {       /* small constant */
-
-                FastMem.CodeByte(out zbyte bvalue);
-                value = bvalue;
-            }
-            else
-            {
-                FastMem.CodeWord(out value);      /* large constant */
-            }
-
-
         }/* load_operand */
 
         /*
@@ -214,8 +185,7 @@ namespace Frotz.Generic
         {
             do
             {
-                FastMem.CodeByte(out zbyte opcode);
-
+                zbyte opcode = 0;
 
                 zargc = 0;
                 if (opcode < 0x80)
@@ -238,18 +208,6 @@ namespace Frotz.Generic
                 {   /* VAR opcodes */
                     zbyte specifier1;
 
-                    if (opcode is 0xec or 0xfa)
-                    {   /* opcodes 0xec */
-                        FastMem.CodeByte(out specifier1);                  /* and 0xfa are */
-                        FastMem.CodeByte(out zbyte specifier2);                  /* call opcodes */
-                        LoadAllOperands(specifier1);        /* with up to 8 */
-                        LoadAllOperands(specifier2);         /* arguments    */
-                    }
-                    else
-                    {
-                        FastMem.CodeByte(out specifier1);
-                        LoadAllOperands(specifier1);
-                    }
 
                     PrivateInvoke(var_opcodes[opcode - 0xc0], "VAR", (opcode - 0xc0), opcode);
                 }
@@ -306,43 +264,8 @@ namespace Frotz.Generic
          */
         internal static void Branch(bool flag)
         {
-            FastMem.CodeByte(out zbyte specifier);
 
-            zbyte off1 = (zbyte)(specifier & 0x3f);
 
-            if (!flag)
-                specifier ^= 0x80;
-
-            zword offset;
-            if ((specifier & 0x40) == 0)
-            { // if (!(specifier & 0x40)) {		/* it's a long branch */
-
-                if ((off1 & 0x20) > 0)      /* propagate sign bit */
-                    off1 |= 0xc0;
-
-                FastMem.CodeByte(out zbyte off2);
-
-                offset = (zword)((off1 << 8) | off2);
-            }
-            else
-            {
-                offset = off1;        /* it's a short branch */
-            }
-
-            if ((specifier & 0x80) > 0)
-            {
-
-                if (offset > 1)
-                {       /* normal branch */
-                    FastMem.GetPc(out long pc);
-                    pc += (short)offset - 2;
-                    FastMem.SetPc(pc);
-                }
-                else
-                {
-                    Ret(offset);      /* special case, return 0 or 1 */
-                }
-            }
         }/* branch */
 
         /*
@@ -413,14 +336,6 @@ namespace Frotz.Generic
 
         private static void __extended__()
         {
-            FastMem.CodeByte(out zbyte opcode);
-            FastMem.CodeByte(out zbyte specifier);
-
-            LoadAllOperands(specifier);
-
-            if (opcode < 0x1e)          /* extended opcodes from 0x1e on */
-                // ext_opcodes[opcode] ();		/* are reserved for future spec' */
-                PrivateInvoke(ext_opcodes[opcode], "Extended", opcode, opcode);
 
         }/* __extended__ */
 

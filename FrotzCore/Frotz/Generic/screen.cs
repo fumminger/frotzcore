@@ -444,16 +444,6 @@ namespace Frotz.Generic
             zword y = wp[win].YPos;
             zword x = wp[win].XPos;
 
-            if (FastMem.Hi(wp[win].colour) != ZColor.TRANSPARENT_COLOUR)
-            {
-
-                OS.EraseArea(y, x,
-                    y + wp[win].YSize - 1,
-                    x + wp[win].XSize - 1,
-                    win);
-
-            }
-
 
             ResetCursor(win);
 
@@ -756,9 +746,6 @@ namespace Frotz.Generic
 
             /* Do nothing if the background is transparent */
 
-            if (FastMem.Hi(cwp.colour) == ZColor.TRANSPARENT_COLOUR)
-                return;
-
             /* Clipping at the right margin of the current window */
 
             if (--pixels == 0 || pixels > UnitsLeft())
@@ -792,8 +779,6 @@ namespace Frotz.Generic
 
             /* Do nothing if the background is transparent */
 
-            if (FastMem.Hi(cwp.colour) == ZColor.TRANSPARENT_COLOUR)
-                return;
 
             if (y == 0)     /* use cursor line if y-coordinate is 0 */
                 y = cwp.y_cursor;
@@ -845,8 +830,6 @@ namespace Frotz.Generic
             x = cwp.x_cursor;
 
 
-            FastMem.StoreW((zword)(Process.zargs[0] + 0), y);
-            FastMem.StoreW((zword)(Process.zargs[0] + 2), x);
 
         }/* z_get_cursor */
 
@@ -872,24 +855,11 @@ namespace Frotz.Generic
             }
             else if (Process.zargs[1] == 16)
             {
-                Process.Store(OS.ToTrueColor(FastMem.Lo(wp[WinArg0()].colour)));
+
             }
             else if (Process.zargs[1] == 17)
             {
 
-                zword bg = FastMem.Hi(wp[WinArg0()].colour);
-
-                if (bg == ZColor.TRANSPARENT_COLOUR)
-                {
-                    unchecked
-                    {
-                        Process.Store((zword)(-4));
-                    }
-                }
-                else
-                {
-                    Process.Store(OS.ToTrueColor(bg));
-                }
             }
             else
             {
@@ -944,9 +914,6 @@ namespace Frotz.Generic
 
             bool avail = OS.PictureData(pic, out int height, out int width);
 
-
-            FastMem.StoreW((zword)(table + 0), (zword)(height));
-            FastMem.StoreW((zword)(table + 2), (zword)(width));
 
             Process.Branch(avail);
 
@@ -1032,10 +999,8 @@ namespace Frotz.Generic
                 {
 
 
-                    FastMem.LowByte(addr, out zbyte c);
-                    addr++;
+                   addr++;
 
-                    Buffer.PrintChar(c);
 
                 }
 
