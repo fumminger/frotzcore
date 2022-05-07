@@ -9,14 +9,14 @@ namespace Frotz.Screen
 
     public class ScreenLines : IDisposable
     {
-        private readonly PooledList<LineInfo> _lines;
+        private readonly List<LineInfo> _lines;
 
         public ScreenLines(int rows, int columns)
         {
             Rows = rows;
             Columns = columns;
 
-            _lines = new PooledList<LineInfo>(rows);
+            _lines = new List<LineInfo>(rows);
             for (int i = 0; i < rows; i++)
             {
                 _lines.Add(new(columns * 3));
@@ -103,8 +103,6 @@ namespace Frotz.Screen
 
         public string GetText(out List<FontChanges> changes) => GetTextToLine(Rows, out changes);
 
-        public ReadOnlySpan<LineInfo> GetLines() => _lines.Span;
-
         public string GetTextToLine(int line, out List<FontChanges> changes)
         {
             int pos = 0;
@@ -143,7 +141,6 @@ namespace Frotz.Screen
             if (_lines is not null)
             {
                 _lines.ForEach(x => x?.Dispose());
-                _lines.Dispose();
             }
         }
     }

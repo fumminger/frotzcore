@@ -21,12 +21,12 @@
 /*
  * New undo mechanism added by Jim Dunleavy <jim.dunleavy@erha.ie>
  */
-using Collections.Pooled;
 
 using Frotz.Constants;
 
 using System;
 using System.Buffers.Binary;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -207,7 +207,7 @@ namespace Frotz.Generic
 
         private static zbyte[] PrevZmp = new zbyte[0];
         private static zbyte[] UndoDiff = new zbyte[0];
-        private static readonly PooledList<UndoStruct> UndoMem = new();
+        private static readonly List<UndoStruct> UndoMem = new();
         private static int UndoCount => UndoMem.Count;
 
         /*

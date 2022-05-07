@@ -1,4 +1,4 @@
-﻿using Collections.Pooled;
+﻿
 using System;
 using System.Collections.Generic;
 
@@ -10,7 +10,7 @@ namespace Frotz.Screen
         private readonly char[] _chars;
         private readonly CharDisplayInfo[] _styles;
         private readonly object _lockObj = new();
-        private PooledList<FontChanges>? _changes;
+        private List<FontChanges>? _changes;
 
         public int X { get; set; }
         public int Y { get; set; }
@@ -41,7 +41,6 @@ namespace Frotz.Screen
                 _styles[pos] = FandS;
                 LastCharSet = Math.Max(pos, LastCharSet);
 
-                _changes?.Dispose();
                 _changes = null;
             }
         }
@@ -62,7 +61,6 @@ namespace Frotz.Screen
 
                 if (_changes is not null)
                 {
-                    _changes.Dispose();
                     _changes = null;
                 }
             }
@@ -92,7 +90,6 @@ namespace Frotz.Screen
 
                 if (_changes is not null)
                 {
-                    _changes.Dispose();
                     _changes = null;
                 }
             }
@@ -110,7 +107,7 @@ namespace Frotz.Screen
                 {
                     if (_changes == null)
                     {
-                        _changes = new PooledList<FontChanges>(Width);
+                        _changes = new List<FontChanges>(Width);
                         var chars = CurrentChars;
 
                         var fc = new FontChanges(-1, 0, new CharDisplayInfo(-1, 0, 0, 0));
