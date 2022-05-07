@@ -62,11 +62,11 @@ namespace Frotz.Blorb
         //    }
         //}
 
-        private readonly struct Chunk
+        private struct Chunk
         {
-            public readonly BlorbUsage Usage;
-            public readonly int Number;
-            public readonly int Start;
+            public BlorbUsage Usage;
+            public int Number;
+            public int Start;
 
             public Chunk(BlorbUsage usage, int number, int start)
             {

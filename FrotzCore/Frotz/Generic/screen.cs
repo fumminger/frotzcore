@@ -32,12 +32,12 @@ namespace Frotz.Generic
     {
         private const int current_window = 100;
 
-        private readonly struct StoryInfo
+        private struct StoryInfo
         {
-            public readonly Story story_id;
-            public readonly int pic;
-            public readonly int pic1;
-            public readonly int pic2;
+            public Story story_id;
+            public int pic;
+            public int pic1;
+            public int pic2;
 
             public StoryInfo(Story sid, int p, int p1, int p2)
             {

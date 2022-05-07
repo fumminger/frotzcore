@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="os_WPF.cs" />
+    <Compile Remove="Utilities.cs" />
     <Compile Remove="ValueStringBuilder.cs" />
   </ItemGroup>
   <ItemGroup>

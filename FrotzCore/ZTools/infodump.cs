@@ -422,7 +422,7 @@ public static class InfoDump
 
     }/* show_map */
 
-    private readonly struct AreaComparer : IComparer<AreaT>
+    private struct AreaComparer : IComparer<AreaT>
     {
         public int Compare(AreaT x, AreaT y) => (int)(x.AreaBase - y.AreaBase);
     }

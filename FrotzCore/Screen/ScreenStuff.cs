@@ -14,10 +14,10 @@
         }
     }
 
-    public readonly struct ZPoint
+    public struct ZPoint
     {
-        public readonly int X;
-        public readonly int Y;
+        public int X;
+        public int Y;
 
         public ZPoint(int x, int y)
         {
@@ -28,10 +28,10 @@
         public static implicit operator ZPoint(ValueTuple<int, int> pair) => new(pair.Item1, pair.Item2);
     }
 
-    public readonly struct ZSize
+    public struct ZSize
     {
-        public readonly int Height;
-        public readonly int Width;
+        public int Height;
+        public int Width;
 
         public ZSize(int height, int width)
         {
@@ -49,13 +49,13 @@
         public static readonly ZSize Empty = new(0, 0);
     }
 
-    public readonly struct ScreenMetrics
+    public struct ScreenMetrics
     {
-        public readonly ZSize FontSize;
-        public readonly ZSize WindowSize;
-        public readonly int Rows;
-        public readonly int Columns;
-        public readonly int Scale;
+        public ZSize FontSize;
+        public ZSize WindowSize;
+        public int Rows;
+        public int Columns;
+        public int Scale;
 
         public ScreenMetrics(ZSize fontSize, ZSize windowSize, int rows, int columns, int scale)
         {

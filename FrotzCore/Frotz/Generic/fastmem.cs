@@ -37,11 +37,11 @@ using zword = System.UInt16;
 namespace Frotz.Generic
 {
 
-    internal readonly struct RecordStruct
+    internal struct RecordStruct
     {
-        public readonly Story StoryId;
-        public readonly zword Release;
-        public readonly string Serial;
+        public Story StoryId;
+        public zword Release;
+        public string Serial;
 
         public RecordStruct(Story storyId, zword release, string serial)
         {
@@ -175,16 +175,16 @@ namespace Frotz.Generic
 
         //typedef struct undo_struct undo_t;
 
-        internal readonly struct UndoStruct
+        internal struct UndoStruct
         {
-            public readonly long Pc;
-            public readonly long DiffSize;
-            public readonly zword FrameCount;
-            public readonly zword StackSize;
-            public readonly zword FrameOffset;
-            public readonly int Sp;
-            public readonly zword[] Stack;
-            public readonly byte[] UndoData;
+            public long Pc;
+            public long DiffSize;
+            public zword FrameCount;
+            public zword StackSize;
+            public zword FrameOffset;
+            public int Sp;
+            public zword[] Stack;
+            public byte[] UndoData;
  
        
             public UndoStruct(long pc, long diffSize, zword frameCount, zword stackSize, zword frameOffset, int sp,

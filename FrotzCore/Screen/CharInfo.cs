@@ -1,10 +1,10 @@
 ﻿namespace Frotz.Screen
 {
 
-    public readonly struct CharInfo
+    public struct CharInfo
     {
-        public readonly char Character;
-        public readonly CharDisplayInfo DisplayInfo;
+        public char Character;
+        public CharDisplayInfo DisplayInfo;
         public CharInfo(char character, CharDisplayInfo displayInfo)
         {
             Character = character;
