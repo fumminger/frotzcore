@@ -10,14 +10,17 @@
     <RootNamespace>Frotz</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Frotz\Generic\**" />
     <Compile Remove="Properties\**" />
     <Compile Remove="Screen\**" />
     <Compile Remove="TestStuff\**" />
     <Compile Remove="ZTools\**" />
+    <EmbeddedResource Remove="Frotz\Generic\**" />
     <EmbeddedResource Remove="Properties\**" />
     <EmbeddedResource Remove="Screen\**" />
     <EmbeddedResource Remove="TestStuff\**" />
     <EmbeddedResource Remove="ZTools\**" />
+    <None Remove="Frotz\Generic\**" />
     <None Remove="Properties\**" />
     <None Remove="Screen\**" />
     <None Remove="TestStuff\**" />

@@ -19,7 +19,7 @@
  * Or visit http://www.fsf.org/
  */
 using Frotz.Constants;
-using Frotz.Generic;
+
 using static Frotz.Constants.CharCodes;
 using static Frotz.Constants.FileTypes;
 using static Frotz.Constants.General;
@@ -270,128 +270,7 @@ namespace Frotz
                        TimeSpan timeout, input_type type,
                    zword[]? continued_line_chars)
         {
-            DateTime start_time = DateTime.Now; // WARNING : Not in original code, which leaves this uninitialized
-
-            if (timeout != TimeSpan.Zero)
-            {
-                if (time_ahead >= timeout)
-                {
-                    time_ahead -= timeout;
-                    return true;
-                }
-                timeout -= time_ahead;
-                start_time = DateTime.Now;
-            }
-            time_ahead = TimeSpan.Zero;
-
-            dumb_show_screen(show_cursor);
-            for (; ; )
-            {
-                if (prompt != null)
-                    Console.Out.Write(prompt);
-                else
-                    dumb_show_prompt(show_cursor,
-                        (timeout != TimeSpan.Zero ? "tTD" : ")>}")[(int)type]);
-
-                /* Prompt only shows up after user input if we don't flush stdout */
-                Console.Out.Flush();
-                dumb_getline(ref s);
-                if ((s[0] != '\\') || ((s[1] != '\0') && !Char.IsLower((char)s[1])))
-                {
-                    /* Is not a command line.  */
-                    translate_special_chars(ref s);
-                    if (timeout != TimeSpan.Zero)
-                    {
-                        TimeSpan elapsed = (DateTime.Now - start_time) * 10 * speed;
-                        if (elapsed > timeout)
-                        {
-                            time_ahead = elapsed - timeout;
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-                /* Commands.  */
-
-                /* Remove the \ and the terminating newline.  */
-                // "command = s+1";
-                zword[] command = ConvertToZWords(s.ToString().Substring(1));
-                command[strlen(command) - 1] = '\0';
-
-                if (command.ToString() == "t")
-                {
-                    if (timeout != TimeSpan.Zero)
-                    {
-                        time_ahead = TimeSpan.Zero;
-                        s[0] = '\0';
-                        return true;
-                    }
-                }
-                else if (command[0] == 'w')
-                {
-                    if (timeout != TimeSpan.Zero)
-                    {
-                        TimeSpan elapsed = TimeSpan.FromSeconds(int.Parse(ConvertToString(command).Substring(1)));
-                        DateTime now = DateTime.Now;
-                        if (elapsed == TimeSpan.Zero)
-                            elapsed = (now - start_time) * 10 * speed;
-                        if (elapsed >= timeout)
-                        {
-                            time_ahead = elapsed - timeout;
-                            s[0] = '\0';
-                            return true;
-                        }
-                        timeout -= elapsed;
-                        start_time = now;
-                    }
-                }
-                else if (command.ToString() == "d")
-                {
-                    if (type != input_type.INPUT_LINE_CONTINUED)
-                        Console.Error.WriteLine("DUMB-FROTZ: No input to discard");
-                    else
-                    {
-                        dumb_discard_old_input(continued_line_chars.Length);
-                        continued_line_chars[0] = '\0';
-                        type = input_type.INPUT_LINE;
-                    }
-                }
-                else if (command.ToString() == "help")
-                {
-                    if (!do_more_prompts)
-                        Console.Out.Write(runtime_usage);
-                    else
-                    {
-                        int current_page = 0;
-                        int next_page = 0;
-                        for (; ; )
-                        {
-                            int i;
-                            for (i = 0; (i < Main.h_screen_rows - 2) && runtime_usage[next_page] != 0; i++)
-                                next_page = runtime_usage.IndexOf("\n", next_page) + 1;
-                            /* next_page - current_page is width */
-                            Console.Out.Write("{0}", new string(runtime_usage.ToCharArray(), current_page, next_page - current_page));
-                            current_page = next_page;
-                            if (runtime_usage[current_page] != 0)
-                                break;
-                            Console.Out.Write("HELP: Type <return> for more, or q <return> to stop: ");
-                            Console.Out.Flush();
-                            dumb_getline(ref s);
-                            if (s.ToString() == "q\n")
-                                break;
-                        }
-                    }
-                }
-                else if (command.ToString() == "s")
-                {
-                    dumb_dump_screen();
-                }
-                else if (!dumb_handle_setting(command, show_cursor, false))
-                {
-                    Console.Error.Write("DUMB-FROTZ: unknown command: {0}\n", s);
-                    Console.Error.Write("Enter \\help to see the list of commands\n");
-                }
-            }
+            return true;
         }
 
 
@@ -515,81 +394,7 @@ namespace Frotz
         private static bool timed_out_last_time;
         public static zword ReadLine(int max, Span<zword> buf, int timeout, int width, bool continued)
         {
-            int p;
-            zword terminator;
-            // static bool timed_out_last_time;
-            bool timed_out;
-#if USE_UTF8
-        int i, j, len;
-#endif
-
-            /* Discard any keys read for single key input.  */
-            read_key_buffer[0] = '\0';
-
-            /* After timing out, discard any further input unless
-             * we're continuing.  */
-            if (timed_out_last_time && !continued)
-                read_line_buffer[0] = '\0';
-
-            if (read_line_buffer[0] == '\0')
-            {
-                timed_out = dumb_read_line(read_line_buffer, null, true,
-                    TimeSpan.FromSeconds(timeout), buf[0] != 0 ? input_type.INPUT_LINE_CONTINUED : input_type.INPUT_LINE,
-                    buf.ToArray());
-            }
-            else
-                timed_out = check_timeout(TimeSpan.FromSeconds(timeout));
-
-            if (timed_out)
-            {
-                timed_out_last_time = true;
-                return ZC_TIME_OUT;
-            }
-
-            /* find the terminating character.  */
-            for (p = 0; ; p++)
-            {
-                if (Input.IsTerminator(read_line_buffer[p]))
-                {
-                    terminator = read_line_buffer[p];
-                    read_line_buffer[p++] = '\0';
-                    break;
-                }
-            }
-
-            /* TODO: Truncate to width and max.  */
-
-            /* copy to screen */
-            dumb_display_user_input(read_line_buffer);
-
-            /* copy to the buffer and save the rest for next time.  */
-#if USE_UTF8 == false
-            strncat(ref buf, read_line_buffer, INPUT_BUFFER_SIZE - strlen(read_line_buffer) - 1);
-#else
-        for (len = 0; ; len++)
-        {
-            if (!buf[len])
-                break;
-        }
-        j = 0;
-        for (i = len; i < INPUT_BUFFER_SIZE - 2; i++)
-        {
-            if (!read_line_buffer[j])
-                break;
-            j = utf8_to_zchar(&buf[i], read_line_buffer, j);
-        }
-        buf[i] = 0;
-#endif
-            p = strlen(read_line_buffer) + 1;
-            Array.Copy(read_line_buffer, p, read_line_buffer, 0, INPUT_BUFFER_SIZE - p);
-
-            /* If there was just a newline after the terminating character,
-             * don't save it.  */
-            if ((read_line_buffer[0] == '\r') && (read_line_buffer[1] == '\0'))
-                read_line_buffer[0] = '\0';
-
-            timed_out_last_time = false;
-            return terminator;
+             return 0;
         }
 
 
@@ -614,96 +419,7 @@ namespace Frotz
          */
         public static bool ReadFileName(out string? out_file_name, string default_name, FileTypes flag)
         {
-            zword[] file_name = new zword[FILENAME_MAX + 1];
-            string prompt;
-
-            zword[] fullpath = new zword[INPUT_BUFFER_SIZE];
-            zword[] buf;
-
-            zword[] tempname;
-            zword[] path_separator = new zword[2];
-            int i;
-
-            path_separator[0] = PATH_SEPARATOR;
-            path_separator[1] = (char)0;
-
-            /* If we're restoring a game before the interpreter starts,
-             * our filename is already provided.  Just go ahead silently.
-             */
-            //        if (f_setup.restore_mode)
-            //        {
-            //            out_file_name = default_name;
-            //        }
-            //        else
-            {
-                //            if (f_setup.restricted_path)
-                //            {
-                //                for (i = strlen(default_name); i > 0; i--)
-                //                {
-                //                    if (default_name[i] == PATH_SEPARATOR)
-                //                    {
-                //                        i++;
-                //                        break;
-                //                    }
-                //                }
-                //                tempname = strdup(default_name + i);
-                //                sprintf(prompt, "Please enter a filename [%s]: ", tempname);
-                //            }
-                //            else
-                prompt = "Please enter a filename [" + default_name + "]: ";
-                dumb_read_misc_line(fullpath, prompt);
-                //           if (fullpath[0] == 0)
-                buf = fullpath;
-                //           else
-                //               buf = basename(fullpath);
-                if (strlen(buf) > MAX_FILE_NAME)
-                {
-                    Console.Out.Write("Filename too long\n");
-                    out_file_name = null;
-                    return false;
-                }
-            }
-
-            if (buf[0] != 0)
-                strncpy(file_name, fullpath, FILENAME_MAX);
-            else
-                strncpy(file_name, ConvertToZWords(default_name), FILENAME_MAX);
-
-            /* Check if we're restricted to one directory. */
-            //        if (f_setup.restricted_path != NULL)
-            //        {
-            //            for (i = strlen(file_name); i > 0; i--)
-            //            {
-            //                if (file_name[i] == PATH_SEPARATOR)
-            //                {
-            //                    i++;
-            //                    break;
-            //                }
-            //            }
-            //            tempname = strdup(file_name + i);
-            //            strncpy(file_name, f_setup.restricted_path, FILENAME_MAX);
-            //
-            //            /* Make sure the final character is the path separator. */
-            //            if (file_name[strlen(file_name) - 1] != PATH_SEPARATOR)
-            //            {
-            //                strncat(file_name, path_separator, FILENAME_MAX - strlen(file_name) - 2);
-            //            }
-            //            strncat(file_name, tempname, strlen(file_name) - strlen(tempname) - 1);
-            //        }
-
-            /* Warn if overwriting a file.  */
-            if ((flag == FILE_SAVE || flag == FILE_SAVE_AUX || flag == FILE_RECORD)
-                && (File.Exists(ConvertToString(file_name))))
-            {
-
-                dumb_read_misc_line(fullpath, "Overwrite existing file? ");
-                if (Text.UnicodeToLower(fullpath[0]) != 'y')
-                {
-                    out_file_name = null;
-                    return false;
-                }
-            }
-            out_file_name = strdup(file_name).ToString();
+            out_file_name = "";
             return true;
         }
 
@@ -727,11 +443,6 @@ namespace Frotz
 
         private static void dumb_init_input()
         {
-            if ((Main.h_version >= V4) && (speed != 0))
-                Main.h_config |= CONFIG_TIMEDINPUT;
-
-            if (Main.h_version >= V5)
-                Main.h_flags &= (ushort)(~(MOUSE_FLAG | MENU_FLAG) & 0xffff);
         }
 
         /*
