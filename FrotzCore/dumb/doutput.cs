@@ -1082,7 +1082,7 @@ namespace Frotz
          * Given a true colour, return an appropriate colour index.
          *
          */
-        public static zword FromTrueColor(zword colour) => TrueColorStuff.GetColourIndex(TrueColorStuff.RGB5ToTrue(colour));
+        public static zword FromTrueColor(zword colour) => 0;
 
         /*
          * os_to_true_colour
@@ -1090,7 +1090,7 @@ namespace Frotz
          * Given a colour index, return the appropriate true colour.
          *
          */
-        public static zword ToTrueColor(int index) => TrueColorStuff.TrueToRGB5(TrueColorStuff.GetColor(index));
+        public static zword ToTrueColor(int index) =>0;
 
     }
 }
