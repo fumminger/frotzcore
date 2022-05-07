@@ -22,6 +22,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Extensions.cs" />
+    <Compile Remove="Frotz\Other\BlorbFiles.cs" />
+    <Compile Remove="Frotz\Other\GraphicsFont.cs" />
+    <Compile Remove="Frotz\Other\PNG.cs" />
     <Compile Remove="Frotz\Other\TrueColorStuff.cs" />
     <Compile Remove="GlobalUsings.cs" />
     <Compile Remove="os_WPF.cs" />

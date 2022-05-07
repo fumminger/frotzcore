@@ -12,7 +12,6 @@ namespace Frotz
 
     public static partial class OS
     {
-        public static Blorb.Blorb? BlorbFile = null; // TODO Make this static again, or something
         private const int MaxStack = 0xff;
 
         // Helpers

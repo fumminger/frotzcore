@@ -66,14 +66,6 @@ namespace Frotz
             {
                 Main.h_config |= ZMachine.CONFIG_COLOUR;
             }
-            if (Main.h_version == ZMachine.V6)
-            {
-                if (BlorbFile != null)
-                {
-                    Main.h_config |= ZMachine.CONFIG_PICTURES;
-                    Main.h_config |= ZMachine.CONFIG_SOUND;
-                }
-            }
             //theApp.CopyUsername();
 
             Main.h_interpreter_version = (byte)'F';

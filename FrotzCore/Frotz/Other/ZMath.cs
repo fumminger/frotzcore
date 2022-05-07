@@ -15,9 +15,10 @@ namespace Frotz.Other
             byte[] bytes = Encoding.UTF8.GetBytes(chars);
             return BinaryPrimitives.ReadUInt32BigEndian(bytes);
         }
-
+        /*
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint MakeInt(Span<byte> bytes)
             => BinaryPrimitives.ReadUInt32BigEndian(bytes);
+        */
     }
 }

@@ -54,7 +54,7 @@
         void SetInputColor();
         void AddInputChar(char c);
 
-        void StoryStarted(string storyName, Blorb.Blorb? blorbFile);
+        void StoryStarted(string storyName);
 
         ZPoint GetCursorPosition();
 
