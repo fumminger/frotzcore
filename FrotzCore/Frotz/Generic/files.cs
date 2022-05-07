@@ -32,11 +32,11 @@ namespace Frotz.Generic
         internal static string ScriptName = General.DEFAULT_SCRIPT_NAME;
         internal static string CommandName = General.DEFAULT_COMMAND_NAME;
         private static int ScriptWidth = 0;
-        private static StreamWriter? Sfp = null;
-        private static System.IO.StreamWriter? Rfp = null;
-        private static System.IO.FileStream? Pfp = null;
+//        private static StreamWriter? Sfp = null;
+//        private static System.IO.StreamWriter? Rfp = null;
+//        private static System.IO.FileStream? Pfp = null;
 
-        #region Script
+#if true
         /*
          * script_open
          *
@@ -78,7 +78,7 @@ namespace Frotz.Generic
 
         internal static void ScriptNewLine()
         {
-            Sfp?.WriteLine();
+            //Sfp?.WriteLine();
 
             ScriptWidth = 0;
         }/* script_new_line */
@@ -111,7 +111,7 @@ namespace Frotz.Generic
                 return;
             }
 
-            Sfp?.Write((char)c);
+            //Sfp?.Write((char)c);
             ScriptWidth++;
         }/* script_char */
 
@@ -152,7 +152,7 @@ namespace Frotz.Generic
             for (i = 0, width = 0; buf[i] != 0; i++)
                 width++;
 
-            Sfp?.BaseStream.SetLength(Sfp.BaseStream.Length - width);
+            //Sfp?.BaseStream.SetLength(Sfp.BaseStream.Length - width);
             ScriptWidth -= width;
         }/* script_erase_input */
 
@@ -181,9 +181,8 @@ namespace Frotz.Generic
          */
 
         internal static void ScriptMssgOff() => ScriptNewLine();/* script_mssg_off */
-        #endregion
-
-        #region Record
+#endif
+#if true
         /*
          * record_open
          *
@@ -196,7 +195,7 @@ namespace Frotz.Generic
             if (OS.ReadFileName(out string? new_name, CommandName, FileTypes.FILE_RECORD))
             {
                 CommandName = new_name;
-
+                /*
                 if ((Rfp = new System.IO.StreamWriter(CommandName, false)) != null)
                 {
 
@@ -206,6 +205,7 @@ namespace Frotz.Generic
                 {
                     Text.PrintString("Cannot open file\n");
                 }
+                */
             }
         }/* record_open */
 
@@ -231,27 +231,27 @@ namespace Frotz.Generic
 
         private static void RecordCode(int c, bool force_encoding)
         {
-            if (Rfp is null)
-                throw new InvalidOperationException("Rfp not initialized.");
+            //if (Rfp is null)
+            //    throw new InvalidOperationException("Rfp not initialized.");
 
             if (force_encoding || (c is '[' or < 0x20 or > 0x7e))
             {
                 int i;
 
-                Rfp.Write('[');
+                //Rfp.Write('[');
 
                 for (i = 10000; i != 0; i /= 10)
                 {
-                    if (c >= i || i == 1)
-                        Rfp.Write((char)('0' + (c / i) % 10));
+                    //if (c >= i || i == 1)
+                        //Rfp.Write((char)('0' + (c / i) % 10));
                 }
 
-                Rfp.Write(']');
+                //Rfp.Write(']');
 
             }
             else
             {
-                Rfp.Write((char)c);
+                //Rfp.Write((char)c);
             }
         }/* record_code */
 
@@ -278,7 +278,7 @@ namespace Frotz.Generic
         {
             RecordChar(key);
 
-            Rfp?.Write('\n');
+            //Rfp?.Write('\n');
 
         }/* record_write_key */
 
@@ -300,13 +300,11 @@ namespace Frotz.Generic
 
             RecordChar(key);
 
-            Rfp?.Write('\n');
+            //Rfp?.Write('\n');
 
         }/* record_write_input */
-        #endregion
-
-        #region Replay
-
+#endif
+#if true
         /*
          * replay_open
          *
@@ -333,7 +331,7 @@ namespace Frotz.Generic
         {
             Screen.SetMorePrompts(true);
 
-            Pfp?.Close();
+//            Pfp?.Close();
 
 
         }/* replay_close */
@@ -347,21 +345,21 @@ namespace Frotz.Generic
 
         private static int ReplayCode()
         {
-            if (Pfp is null)
-                throw new InvalidOperationException("Pfp not initialized");
+            //if (Pfp is null)
+            //    throw new InvalidOperationException("Pfp not initialized");
 
-            int c;
+            int c = 0;
 
-            if ((c = Pfp.ReadByte()) == '[')
-            {
-                int c2;
-                c = 0;
-                while ((c2 = Pfp.ReadByte()) is not -1 and >= '0' and <= '9')
-                    c = 10 * c + c2 - '0';
-
-                return (c2 == ']') ? c : -1;
-            }
-            else
+            //if ((c = Pfp.ReadByte()) == '[')
+            //{
+            //    int c2;
+            //    c = 0;
+            //    while ((c2 = Pfp.ReadByte()) is not -1 and >= '0' and <= '9')
+            //        c = 10 * c + c2 - '0';
+//
+ //               return (c2 == ']') ? c : -1;
+ //           }
+ //           else
             {
                 return c;
             }
@@ -376,8 +374,8 @@ namespace Frotz.Generic
 
         private static zword ReplayChar()
         {
-            if (Pfp is null)
-                throw new InvalidOperationException("Pfp not initialized.");
+//            if (Pfp is null)
+//                throw new InvalidOperationException("Pfp not initialized.");
 
             int c;
             if ((c = ReplayCode()) != -1)
@@ -398,8 +396,8 @@ namespace Frotz.Generic
                     }
                 }
 
-                Pfp.Position--;
-                Pfp.WriteByte((byte)'\n');
+//                Pfp.Position--;
+//                Pfp.WriteByte((byte)'\n');
 
                 return CharCodes.ZC_RETURN;
             }
@@ -420,14 +418,14 @@ namespace Frotz.Generic
         {
             zword key = ReplayChar();
 
-            if (Pfp?.ReadByte() != '\n')
+//            if (Pfp?.ReadByte() != '\n')
             {
 
                 ReplayClose();
                 return CharCodes.ZC_BAD;
 
             }
-            else
+//            else
             {
                 return key;
             }
@@ -468,6 +466,6 @@ namespace Frotz.Generic
             return c;
 
         }/* replay_read_input */
-        #endregion
+#endif
     }
 }

@@ -112,7 +112,7 @@ namespace Frotz.Generic
         internal static long Zmp = 0;
         internal static long Pcp = 0;
 
-        private static System.IO.Stream? StoryFp = null;
+        //private static System.IO.Stream? StoryFp = null;
         private static bool FirstRestart = true;
         private static long InitFpPos = 0;
 
@@ -285,7 +285,7 @@ namespace Frotz.Generic
         /// </summary>
         internal static void ResetMemory()
         {
-            StoryFp?.Dispose();
+            //StoryFp?.Dispose();
             UndoMem.Clear();
         }
 

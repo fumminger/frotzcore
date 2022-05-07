@@ -9,15 +9,8 @@
     <Copyright></Copyright>
     <RootNamespace>Frotz</RootNamespace>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="ZTools\**" />
-    <EmbeddedResource Remove="ZTools\**" />
-    <None Remove="ZTools\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Frotz\Generic\fastmem.cs" />
-    <Compile Remove="Frotz\Generic\files.cs" />
-  </ItemGroup>
+  <ItemGroup></ItemGroup>
+  <ItemGroup></ItemGroup>
   <ItemGroup>
     <None Remove="FrotzCoreConsole.deps.json" />
   </ItemGroup>
