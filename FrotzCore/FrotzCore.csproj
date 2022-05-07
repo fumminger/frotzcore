@@ -28,6 +28,7 @@
     <Compile Remove="Frotz\Generic\GameControl.cs" />
     <Compile Remove="Frotz\Generic\getopt.cs" />
     <Compile Remove="Frotz\Generic\hotkey.cs" />
+    <Compile Remove="Frotz\Generic\main.cs" />
     <Compile Remove="Frotz\Generic\math.cs" />
     <Compile Remove="Frotz\Generic\object.cs" />
     <Compile Remove="Frotz\Generic\quetzal.cs" />

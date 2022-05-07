@@ -219,13 +219,7 @@ namespace Frotz.Generic
 
         internal static zword GetHeaderExtension(int entry)
         {
-            if (Main.h_extension_table == 0 || entry > Main.hx_table_size)
-                return 0;
-
-            zword addr = (zword)(Main.h_extension_table + 2 * entry);
-            LowWord(addr, out zword val);
-
-            return val;
+            return 0;
 
         }/* get_header_extension */
 
@@ -238,13 +232,6 @@ namespace Frotz.Generic
 
         internal static void SetHeaderExtension(int entry, zword val)
         {
-            zword addr;
-
-            if (Main.h_extension_table == 0 || entry > Main.hx_table_size)
-                return;
-
-            addr = (zword)(Main.h_extension_table + 2 * entry);
-            SetWord(addr, val);
 
         }/* set_header_extension */
 
@@ -256,65 +243,7 @@ namespace Frotz.Generic
          */
         internal static void RestartHeader()
         {
-            zword screen_x_size;
-            zword screen_y_size;
-            zbyte font_x_size;
-            zbyte font_y_size;
-
-            int i;
-
-            SetByte(ZMachine.H_CONFIG, Main.h_config);
-            SetWord(ZMachine.H_FLAGS, Main.h_flags);
-
-            if (Main.h_version >= ZMachine.V4)
-            {
-                SetByte(ZMachine.H_INTERPRETER_NUMBER, Main.h_interpreter_number);
-                SetByte(ZMachine.H_INTERPRETER_VERSION, Main.h_interpreter_version);
-                SetByte(ZMachine.H_SCREEN_ROWS, Main.h_screen_rows);
-                SetByte(ZMachine.H_SCREEN_COLS, Main.h_screen_cols);
-            }
-
-            /* It's less trouble to use font size 1x1 for V5 games, especially
-               because of a bug in the unreleased German version of "Zork 1" */
-
-            if (Main.h_version != ZMachine.V6)
-            {
-                screen_x_size = Main.h_screen_cols;
-                screen_y_size = Main.h_screen_rows;
-                font_x_size = 1;
-                font_y_size = 1;
-            }
-            else
-            {
-                screen_x_size = Main.h_screen_width;
-                screen_y_size = Main.h_screen_height;
-                font_x_size = Main.h_font_width;
-                font_y_size = Main.h_font_height;
-            }
-
-            if (Main.h_version >= ZMachine.V5)
-            {
-                SetWord(ZMachine.H_SCREEN_WIDTH, screen_x_size);
-                SetWord(ZMachine.H_SCREEN_HEIGHT, screen_y_size);
-                SetByte(ZMachine.H_FONT_HEIGHT, font_y_size);
-                SetByte(ZMachine.H_FONT_WIDTH, font_x_size);
-                SetByte(ZMachine.H_DEFAULT_BACKGROUND, Main.h_default_background);
-                SetByte(ZMachine.H_DEFAULT_FOREGROUND, Main.h_default_foreground);
-            }
-
-            if ((Main.h_version >= ZMachine.V3) && (Main.h_user_name[0] != 0))
-            {
-                for (i = 0; i < 8; i++)
-                {
-                    StoreB((zword)(ZMachine.H_USER_NAME + i), Main.h_user_name[i]);
-                }
-            }
-            SetByte(ZMachine.H_STANDARD_HIGH, Main.h_standard_high);
-            SetByte(ZMachine.H_STANDARD_LOW, Main.h_standard_low);
-
-            SetHeaderExtension(ZMachine.HX_FLAGS, Main.hx_flags);
-            SetHeaderExtension(ZMachine.HX_FORE_COLOUR, Main.hx_fore_colour);
-            SetHeaderExtension(ZMachine.HX_BACK_COLOUR, Main.hx_back_colour);
+ 
         }/* restart_header */
 
         /*
@@ -326,179 +255,7 @@ namespace Frotz.Generic
 
         internal static void InitMemory()
         {
-            long size;
-            zword addr;
-            zword n;
-            int i, j;
-
-            if (Main.StoryData is null || Main.StoryName is null)
-                throw new InvalidOperationException("Story not initialized.");
-
-            StoryFp?.Dispose();
-            StoryFp = OS.PathOpen(Main.StoryData);
-            InitFpPos = StoryFp.Position;
-
-            /* Allocate memory for story header */
-
-            ZMData = new byte[64];
-
-            /* Load header into memory */
-            if (StoryFp.Read(ZMData, 0, 64) != 64)
-            {
-                OS.Fatal("Story file read error");
-            }
-
-            /* Copy header fields to global variables */
-            LowByte(ZMachine.H_VERSION, out Main.h_version);
-
-            if (Main.h_version is < ZMachine.V1 or > ZMachine.V8)
-            {
-                OS.Fatal("Unknown Z-code version");
-            }
-
-            LowByte(ZMachine.H_CONFIG, out Main.h_config);
-            if (Main.h_version == ZMachine.V3 && ((Main.h_config & ZMachine.CONFIG_BYTE_SWAPPED) != 0))
-            {
-                OS.Fatal("Byte swapped story file");
-            }
-
-            LowWord(ZMachine.H_RELEASE, out Main.h_release);
-            LowWord(ZMachine.H_RESIDENT_SIZE, out Main.h_resident_size);
-            LowWord(ZMachine.H_START_PC, out Main.h_start_pc);
-            LowWord(ZMachine.H_DICTIONARY, out Main.h_dictionary);
-            LowWord(ZMachine.H_OBJECTS, out Main.h_objects);
-            LowWord(ZMachine.H_GLOBALS, out Main.h_globals);
-            LowWord(ZMachine.H_DYNAMIC_SIZE, out Main.h_dynamic_size);
-            LowWord(ZMachine.H_FLAGS, out Main.h_flags);
-
-            for (i = 0, addr = ZMachine.H_SERIAL; i < 6; i++, addr++)
-            {
-                LowByte(addr, out Main.h_serial[i]);
-            }
-            // TODO serial might need to be a char
-
-            /* Auto-detect buggy story files that need special fixes */
-
-            Main.StoryId = Story.UNKNOWN;
-
-            for (i = 0; Records[i].StoryId != Story.UNKNOWN; i++)
-            {
-
-                if (Main.h_release == Records[i].Release)
-                {
-                    for (j = 0; j < 6; j++)
-                    {
-                        if (Main.h_serial[j] != Records[i].Serial[j])
-                            goto no_match;
-                    }
-
-                    Main.StoryId = Records[i].StoryId;
-
-                }
-
-            no_match:; /* null statement */
-
-            }
-
-            LowWord(ZMachine.H_ABBREVIATIONS, out Main.h_abbreviations);
-            LowWord(ZMachine.H_FILE_SIZE, out Main.h_file_size);
-
-            /* Calculate story file size in bytes */
-            if (Main.h_file_size != 0)
-            {
-                Main.StorySize = 2 * Main.h_file_size;
-
-                if (Main.h_version >= ZMachine.V4)
-                {
-                    Main.StorySize *= 2;
-                }
-
-                if (Main.h_version >= ZMachine.V6)
-                {
-                    Main.StorySize *= 2;
-                }
-
-                if (Main.StoryId == Story.AMFV && Main.h_release == 47)
-                {
-                    Main.StorySize = 2 * Main.h_file_size;
-                }
-                else if (Main.StorySize > 0)
-                {/* os_path_open() set the size */
-                }
-                else
-                {/* some old games lack the file size entry */
-                    Main.StorySize = StoryFp.Length - InitFpPos;
-                    StoryFp.Position = InitFpPos + 64;
-                }
-
-                LowWord(ZMachine.H_CHECKSUM, out Main.h_checksum);
-                LowWord(ZMachine.H_ALPHABET, out Main.h_alphabet);
-                LowWord(ZMachine.H_FUNCTIONS_OFFSET, out Main.h_functions_offset);
-                LowWord(ZMachine.H_STRINGS_OFFSET, out Main.h_strings_offset);
-                LowWord(ZMachine.H_TERMINATING_KEYS, out Main.h_terminating_keys);
-                LowWord(ZMachine.H_EXTENSION_TABLE, out Main.h_extension_table);
-
-                /* Zork Zero beta and Macintosh versions don't have the graphics flag set */
-
-                if (Main.StoryId == Story.ZORK_ZERO)
-                {
-                    if (Main.h_release is 96 or 153 or 242 or 296)
-                    {
-                        Main.h_flags |= ZMachine.GRAPHICS_FLAG;
-                    }
-                }
-
-                /* Adjust opcode tables */
-
-                if (Main.h_version <= ZMachine.V4)
-                {
-                }
-                else
-                {
-                    Process.op0_opcodes[0x09] = Process.ZCatch;
-                    Process.op0_opcodes[0x0f] = Process.ZCallN;
-                }
-
-                /* Allocate memory for story data */
-                int len = ZMData.Length;
-                if (len < Main.StorySize)
-                {
-                    var buffer = new byte[len];
-                    ZMData.CopyTo(buffer.AsSpan());
-
-                    ZMData = new byte[Main.StorySize];
-                    buffer.CopyTo(ZMData.AsSpan());
-                }
-
-                /* Load story file in chunks of 32KB */
-
-                n = 0x8000;
-
-                for (size = 64; size < Main.StorySize; size += n)
-                {
-                    if (Main.StorySize - size < 0x8000) n = (ushort)(Main.StorySize - size);
-                    SetPc(size);
-
-                    int read = StoryFp.Read(ZMData, (int)Pcp, n);
-
-                    if (read != n) OS.Fatal("Story file read error");
-                }
-
-                // Take a moment to calculate the checksum of the story file in case verify is called
-                ZMData_checksum = 0;
-                for (int k = 64; k < ZMData.Length; k++)
-                {
-                    ZMData_checksum += ZMData[k];
-                }
-            }
-
-            FirstRestart = true;
-
-            /* Read header extension table */
-
-            Main.hx_table_size = GetHeaderExtension(ZMachine.HX_TABLE_SIZE);
-            Main.hx_unicode_table = GetHeaderExtension(ZMachine.HX_UNICODE_TABLE);
-            Main.hx_flags = GetHeaderExtension(ZMachine.HX_FLAGS);
+  
         }/* init_memory */
 
         /// <summary>
@@ -508,15 +265,6 @@ namespace Frotz.Generic
         /// </summary>
         internal static void InitUndo()
         {
-            int len = ZMData.Length;
-            PrevZmp = new zbyte[len];
-
-            UndoDiff = new zbyte[len];
-
-            //UndoMem.ForEach(x => x.Dispose());
-            UndoMem.Clear();
-
-            ZMData.AsSpan(0, Main.h_dynamic_size).CopyTo(PrevZmp);
         }
 
         /// <summary>
@@ -550,31 +298,7 @@ namespace Frotz.Generic
 
         internal static void StoreB(zword addr, zbyte value)
         {
-            if (addr >= Main.h_dynamic_size)
-                Err.RuntimeError(ErrorCodes.ERR_STORE_RANGE);
-
-            if (addr == ZMachine.H_FLAGS + 1)
-            {   /* flags register is modified */
-
-                unchecked { Main.h_flags &= (zword)(~(ZMachine.SCRIPTING_FLAG | ZMachine.FIXED_FONT_FLAG)); }
-                Main.h_flags |= (zword)(value & (ZMachine.SCRIPTING_FLAG | ZMachine.FIXED_FONT_FLAG));
-
-                if ((value & ZMachine.SCRIPTING_FLAG) != 0)
-                {
-                    if (!Main.ostream_script)
-                        Files.ScriptOpen();
-                }
-                else
-                {
-                    if (Main.ostream_script)
-                        Files.ScriptClose();
-                }
-
-                Screen.RefreshTextStyle();
-
-            }
-
-            SetByte(addr, value);
+ 
 
         }/* storeb */
 
@@ -599,48 +323,7 @@ namespace Frotz.Generic
          */
         internal static void ZRestart()
         {
-            Buffer.FlushBuffer();
-
-            OS.RestartGame(ZMachine.RESTART_BEGIN);
-
-            if (!FirstRestart)
-            {
-                if (StoryFp is null)
-                    throw new InvalidOperationException("StoryFp not initialized.");
-
-                StoryFp.Position = InitFpPos;
-
-                int read = StoryFp.Read(ZMData.AsSpan(0, Main.h_dynamic_size).ToArray(), 0, Main.h_dynamic_size);
-                if (read != Main.h_dynamic_size)
-                {
-                    OS.Fatal("Story file read error");
-                }
-            }
-            else
-            {
-                FirstRestart = false;
-            }
-
-            RestartHeader();
-            Screen.RestartScreen();
-
-            Main.sp = Main.fp = General.STACK_SIZE; // TODO Critical to make sure this logic works; sp = fp = stack + STACK_SIZE;
-
-            Main.frame_count = 0;
-
-            if (Main.h_version != ZMachine.V6)
-            {
-
-                zword pc = Main.h_start_pc;
-                SetPc(pc);
-
-            }
-            else
-            {
-                Process.Call(Main.h_start_pc, 0, 0, 0);
-            }
-
-            OS.RestartGame(ZMachine.RESTART_END);
+  
 
         }/* z_restart */
 
@@ -704,154 +387,7 @@ namespace Frotz.Generic
 
         internal static void ZRestore()
         {
-            zword success = 0;
-
-            if (Process.zargc != 0)
-            {
-                OS.Fail("Need to implement optional args in z_restore");
-                ///* Get the file name */
-
-                //get_default_name (default_name, (FastMem.zargc >= 3) ? FastMem.zargs[2] : 0);
-
-                //if ((FastMem.zargc >= 4) ? FastMem.zargs[3] : 1) {
-
-                //    if (os_read_file_name (new_name, default_name, ZMachine.FILE_LOAD_AUX) == 0)
-                //    goto finished;
-
-                //    strcpy (auxilary_name, new_name);
-
-                //} else strcpy (new_name, default_name);
-
-                ///* Open auxilary file */
-
-                //if ((gfp = fopen (new_name, "rb")) == NULL)
-                //    goto finished;
-
-                ///* Load auxilary file */
-
-                //success = fread (zmp + zargs[0], 1, zargs[1], gfp);
-
-                ///* Close auxilary file */
-
-                //fclose (gfp);
-
-            }
-            else
-            {
-
-                /* Get the file name */
-
-                if (!OS.ReadFileName(out string? new_name, SaveName, FileTypes.FILE_RESTORE))
-                    goto finished;
-
-                SaveName = new_name;
-
-                if (StoryFp is null)
-                    throw new InvalidOperationException("StoryFp not initialized.");
-
-                /* Open game file */
-                using (var gfp = new FileStream(new_name, FileMode.Open))
-                {
-                    if (gfp is null) goto finished;
-
-                    if (Main.option_save_quetzal == true)
-                    {
-
-                    }
-                    else
-                    {
-                        OS.Fail("Need to implement old style save");
-                        /* Load game file */
-
-                        //    release = (unsigned) fgetc (gfp) << 8;
-                        //    release |= fgetc (gfp);
-
-                        //    (void) fgetc (gfp);
-                        //    (void) fgetc (gfp);
-
-                        //    /* Check the release number */
-
-                        //    if (release == h_release) {
-
-                        //    pc = (long) fgetc (gfp) << 16;
-                        //    pc |= (unsigned) fgetc (gfp) << 8;
-                        //    pc |= fgetc (gfp);
-
-                        //    SET_PC (pc)
-
-                        //    sp = stack + (fgetc (gfp) << 8);
-                        //    sp += fgetc (gfp);
-                        //    fp = stack + (fgetc (gfp) << 8);
-                        //    fp += fgetc (gfp);
-
-                        //    for (i = (int) (sp - stack); i < STACK_SIZE; i++) {
-                        //        stack[i] = (unsigned) fgetc (gfp) << 8;
-                        //        stack[i] |= fgetc (gfp);
-                        //    }
-
-                        //    fseek (story_fp, init_fp_pos, SEEK_SET);
-
-                        //    for (addr = 0; addr < h_dynamic_size; addr++) {
-                        //        int skip = fgetc (gfp);
-                        //        for (i = 0; i < skip; i++)
-                        //        zmp[addr++] = fgetc (story_fp);
-                        //        zmp[addr] = fgetc (gfp);
-                        //        (void) fgetc (story_fp);
-                        //    }
-
-                        //    /* Check for errors */
-
-                        //    if (ferror (gfp) || ferror (story_fp) || addr != h_dynamic_size)
-                        //        success = -1;
-                        //    else
-
-                        //        /* Success */
-
-                        //        success = 2;
-
-                        //    } else print_string ("Invalid save file\n");
-                    }
-                }
-            }
-            if ((short)success >= 0 && success != zword.MaxValue)
-            {
-                if ((short)success > 0)
-                {
-
-                    /* In V3, reset the upper window. */
-                    if (Main.h_version == ZMachine.V3)
-                        Screen.SplitWindow(0);
-
-                    LowByte(ZMachine.H_SCREEN_ROWS, out zbyte old_screen_rows);
-                    LowByte(ZMachine.H_SCREEN_COLS, out zbyte old_screen_cols);
-
-                    /* Reload cached header fields. */
-                    RestartHeader();
-
-                    /*
-                     * Since QUETZAL files may be saved on many different machines,
-                     * the screen sizes may vary a lot. Erasing the status window
-                     * seems to cover up most of the resulting badness.
-                     */
-                    if (Main.h_version > ZMachine.V3 && Main.h_version != ZMachine.V6
-                        && (Main.h_screen_rows != old_screen_rows
-                        || Main.h_screen_cols != old_screen_cols))
-                    {
-                        Screen.EraseWindow(1);
-                    }
-                }
-            }
-            else
-            {
-                OS.Fatal("Error reading save file");
-            }
-
-        finished:
-
-            if (Main.h_version <= ZMachine.V3)
-                Process.Branch(success > 0);
-            else
-                Process.Store(success);
+     
         }/* z_restore */
 
         /// <summary>
@@ -958,35 +494,7 @@ namespace Frotz.Generic
 
         internal static int RestoreUndo()
         {
-            if (Main.option_undo_slots == 0)    /* undo feature unavailable */
-                return -1;
-
-            if (UndoMem.Count == 0)
-                return 0;
-
-            /* undo possible */
-
-            var undo = UndoMem[UndoMem.Count - 1];
-
-            ZMData.AsSpan(0, Main.h_dynamic_size).CopyTo(PrevZmp);
-            SetPc(undo.Pc);
-            Main.sp = undo.Sp;
-            Main.fp = undo.FrameOffset;
-            Main.frame_count = undo.FrameCount;
-
-            MemUndiff(undo.UndoData, undo.DiffSize, PrevZmp);
-
-            var mainStack = Main.Stack.AsSpan(undo.Sp);
-            undo.Stack.CopyTo(mainStack);
-            //Array.Copy(undo.Stack, 0, Main.Stack, undo.Sp, undo.Stack.Length);
-            //Frotz.Other.ArrayCopy.Copy(undo.stack, 0, Main.stack, undo.sp, undo.stack.Length);
-
-            UndoMem.Remove(undo);
-
-            RestartHeader();
-
-            return 2;
-
+            return 0;
         }/* restore_undo */
 
         /*
@@ -1010,118 +518,7 @@ namespace Frotz.Generic
 
         internal static void ZSave()
         {
-            string? default_name;
-
-            zword success = 0;
-
-            if (Process.zargc != 0)
-            {
-
-                /* Get the file name */
-
-                default_name = GetDefaultName((zword)((Process.zargc >= 3) ? Process.zargs[2] : 0));
-
-                //    if ((zargc >= 4) ? zargs[3] : 1) {
-
-                //        if (os_read_file_name (new_name, default_name, FILE_SAVE_AUX) == 0)
-                //        goto finished;
-
-                //        strcpy (auxilary_name, new_name);
-
-                //    } else strcpy (new_name, default_name);
-
-                //    /* Open auxilary file */
-
-                //    if ((gfp = fopen (new_name, "wb")) == NULL)
-                //        goto finished;
-
-                //    /* Write auxilary file */
-
-                //    success = fwrite (zmp + zargs[0], zargs[1], 1, gfp);
-
-                //    /* Close auxilary file */
-
-                //    fclose (gfp);
-                OS.Fail("need to implement option save arguments");
-            }
-            else
-            {
-                if (!OS.ReadFileName(out string? new_name, SaveName, FileTypes.FILE_SAVE))
-                    goto finished;
-
-                SaveName = new_name;
-
-                if (StoryFp is null)
-                    throw new InvalidOperationException("StoryFp not initialized.");
-
-                /* Open game file */
-
-                using (var gfp = new FileStream(new_name, FileMode.OpenOrCreate))
-                {
-                    if (Main.option_save_quetzal == true)
-                    {
-
-                    }
-                    else
-                    {
-                        OS.Fail("Need to implement old style save");
-
-                        //        /* Write game file */
-
-                        //        fputc ((int) hi (h_release), gfp);
-                        //        fputc ((int) lo (h_release), gfp);
-                        //        fputc ((int) hi (h_checksum), gfp);
-                        //        fputc ((int) lo (h_checksum), gfp);
-
-                        //        GET_PC (pc)
-
-                        //        fputc ((int) (pc >> 16) & 0xff, gfp);
-                        //        fputc ((int) (pc >> 8) & 0xff, gfp);
-                        //        fputc ((int) (pc) & 0xff, gfp);
-
-                        //        nsp = (int) (sp - stack);
-                        //        nfp = (int) (fp - stack);
-
-                        //        fputc ((int) hi (nsp), gfp);
-                        //        fputc ((int) lo (nsp), gfp);
-                        //        fputc ((int) hi (nfp), gfp);
-                        //        fputc ((int) lo (nfp), gfp);
-
-                        //        for (i = nsp; i < STACK_SIZE; i++) {
-                        //        fputc ((int) hi (stack[i]), gfp);
-                        //        fputc ((int) lo (stack[i]), gfp);
-                        //        }
-
-                        //        fseek (story_fp, init_fp_pos, SEEK_SET);
-
-                        //        for (addr = 0, skip = 0; addr < h_dynamic_size; addr++)
-                        //        if (zmp[addr] != fgetc (story_fp) || skip == 255 || addr + 1 == h_dynamic_size) {
-                        //            fputc (skip, gfp);
-                        //            fputc (zmp[addr], gfp);
-                        //            skip = 0;
-                        //        } else skip++;
-                    }
-                }
-                /* Close game file and check for errors */
-
-                // TODO Not sure what to do with these
-                //    if (gfp.Close() ) { // || ferror(story_fp)) {
-                //    Text.print_string("Error writing save file\n");
-                //    goto finished;
-                //}
-
-                /* Success */
-
-                success = 1;
-
-            }
-
-        finished:
-
-            if (Main.h_version <= ZMachine.V3)
-                Process.Branch(success > 0);
-            else
-                Process.Store(success);
+           
         }/* z_save */
 
         /*
@@ -1133,29 +530,6 @@ namespace Frotz.Generic
 
         internal static int SaveUndo()
         {
-            if (Main.option_undo_slots == 0)        /* undo feature unavailable */
-                return -1;
-
-            /* save undo possible */
-
-            if (UndoCount == Main.option_undo_slots)
-                FreeUndo(1);
-
-            int diff_size = MemDiff(ZMData, PrevZmp, Main.h_dynamic_size, UndoDiff);
-            int stack_size = Main.Stack.Length;
-
-            GetPc(out long pc);
-            // p.undo_data = undo_diff;
-            var undoData = new zbyte[diff_size];
-            UndoDiff.AsSpan().Slice(0, diff_size).CopyTo(undoData);
-
-            var stack = new zword[Main.Stack.Length - Main.sp];
-            Main.Stack.AsSpan(Main.sp, Main.Stack.Length - Main.sp).CopyTo(stack);
-
-            //    p->frame_offset = fp - stack;
-            UndoMem.Add(new(pc, diff_size, Main.frame_count, (zword)stack_size,
-                (zword)Main.fp, Main.sp, stack, undoData));
-
             return 1;
         }
 
@@ -1177,22 +551,7 @@ namespace Frotz.Generic
 
         internal static void ZVerify()
         {
-            //zword checksum = 0;
-            //long i;
 
-            /* Sum all bytes in story file except header bytes */
-
-            //for (i = 64; i < main.story_size; i++)
-            //{
-            //    checksum += FastMem.ZMData_original[i];
-            //}
-
-            //for (i = 64; i < story_size; i++)
-            //    checksum += fgetc(story_fp);
-
-            /* Branch if the checksums are equal */
-
-            Process.Branch(ZMData_checksum == Main.h_checksum);
         }
     }
 }

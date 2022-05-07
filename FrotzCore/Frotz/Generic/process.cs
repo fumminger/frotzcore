@@ -36,7 +36,7 @@ namespace Frotz.Generic
 
         public delegate void ZInstruction();
 
-        internal static readonly ZInstruction[] op0_opcodes = new ZInstruction[0x10]
+        internal static readonly ZInstruction[] op0_opcodes = new ZInstruction[]
         {
             new(ZRTrue),
             new(ZRFalse),
@@ -53,7 +53,6 @@ namespace Frotz.Generic
             new(Screen.ZShowStatus),
             new(FastMem.ZVerify), // Not Tested or Implemented
             new(__extended__),
-            new(Main.ZPiracy)
         };
 
         internal static readonly ZInstruction[] op1_opcodes = new ZInstruction[]
@@ -162,19 +161,6 @@ namespace Frotz.Generic
 
                 FastMem.CodeByte(out zbyte variable);
 
-                if (variable == 0)
-                {
-                    value = Main.Stack[Main.sp++];
-                }
-                else if (variable < 16)
-                {
-                    value = Main.Stack[Main.fp - variable];
-                }
-                else
-                {
-                    zword addr = (zword)(Main.h_globals + 2 * (variable - 16)); // TODO Make sure this logic
-                    FastMem.LowWord(addr, out value);
-                }
 
             }
             else if ((type & 1) > 0)
@@ -188,7 +174,6 @@ namespace Frotz.Generic
                 FastMem.CodeWord(out value);      /* large constant */
             }
 
-            zargs[zargc++] = value;
 
         }/* load_operand */
 
@@ -231,11 +216,6 @@ namespace Frotz.Generic
             {
                 FastMem.CodeByte(out zbyte opcode);
 
-                if (Main.AbortGameLoop)
-                {
-                    Main.AbortGameLoop = false;
-                    return;
-                }
 
                 zargc = 0;
                 if (opcode < 0x80)
@@ -291,65 +271,7 @@ namespace Frotz.Generic
          */
         internal static void Call(zword routine, int argc, int args_offset, int ct)
         {
-            zword value;
-            int i;
-
-            if (Main.sp < 4)//if (sp - stack < 4)
-                Err.RuntimeError(ErrorCodes.ERR_STK_OVF);
-
-            FastMem.GetPc(out long pc);
-
-            Main.Stack[--Main.sp] = (zword)(pc >> 9);
-            Main.Stack[--Main.sp] = (zword)(pc & 0x1ff);
-            Main.Stack[--Main.sp] = (zword)(Main.fp - 1); // *--sp = (zword) (fp - stack - 1);
-            Main.Stack[--Main.sp] = (zword)(argc | (ct << (Main.option_save_quetzal == true ? 12 : 8)));
-
-            Main.fp = Main.sp;
-            Main.frame_count++;
-
-            /* Calculate byte address of routine */
-
-            pc = Main.h_version switch
-            {
-                <= ZMachine.V3 => (long)routine << 1,
-                <= ZMachine.V5 => (long)routine << 2,
-                <= ZMachine.V7 => ((long)routine << 2) + ((long)Main.h_functions_offset << 3),
-                _ => (long)routine << 3
-            };
-
-            if (pc >= Main.StorySize)
-                Err.RuntimeError(ErrorCodes.ERR_ILL_CALL_ADDR);
-
-            FastMem.SetPc(pc);
-
-            /* Initialise local variables */
-
-            FastMem.CodeByte(out zbyte count);
-
-            if (count > 15)
-                Err.RuntimeError(ErrorCodes.ERR_CALL_NON_RTN);
-            if (Main.sp < count)
-                Err.RuntimeError(ErrorCodes.ERR_STK_OVF);
-
-            if (Main.option_save_quetzal == true)
-                Main.Stack[Main.fp] |= (zword)(count << 8); /* Save local var count for Quetzal. */
-
-            value = 0;
-
-            for (i = 0; i < count; i++)
-            {
-
-                if (Main.h_version <= ZMachine.V4)      /* V1 to V4 games provide default */
-                    FastMem.CodeWord(out value);        /* values for all local variables */
-
-                Main.Stack[--Main.sp] = (argc-- > 0) ? zargs[args_offset + i] : value;
-                //*--sp = (zword) ((argc-- > 0) ? args[i] : value);
-            }
-
-            /* Start main loop for direct calls */
-
-            if (ct == 2)
-                Interpret();
+        
         }/* call */
 
         /*
@@ -364,33 +286,7 @@ namespace Frotz.Generic
 
         internal static void Ret(zword value)
         {
-            long pc;
-            int ct;
-
-            if (Main.sp > Main.fp)
-                Err.RuntimeError(ErrorCodes.ERR_STK_UNDF);
-
-            Main.sp = Main.fp;
-
-            ct = Main.Stack[Main.sp++] >> (Main.option_save_quetzal == true ? 12 : 8);
-            Main.frame_count--;
-            Main.fp = 1 + Main.Stack[Main.sp++]; // fp = stack + 1 + *sp++;
-            pc = Main.Stack[Main.sp++];
-            pc = (Main.Stack[Main.sp++] << 9) | (int)pc; // TODO Really don't trust casting PC to int
-
-            FastMem.SetPc(pc);
-
-            /* Handle resulting value */
-
-            if (ct == 0)
-                Store(value);
-            if (ct == 2)
-                Main.Stack[--Main.sp] = value;
-
-            /* Stop main loop for direct calls */
-
-            if (ct == 2)
-                finished++;
+         
 
         }/* ret */
 
@@ -457,21 +353,7 @@ namespace Frotz.Generic
          */
         internal static void Store(zword value)
         {
-            FastMem.CodeByte(out zbyte variable);
 
-            if (variable == 0)
-            {
-                Main.Stack[--Main.sp] = value; // *--sp = value;
-            }
-            else if (variable < 16)
-            {
-                Main.Stack[Main.fp - variable] = value;  // *(fp - variable) = value;
-            }
-            else
-            {
-                zword addr = (zword)(Main.h_globals + 2 * (variable - 16));
-                FastMem.SetWord(addr, value);
-            }
 
         }/* store */
 
@@ -518,7 +400,7 @@ namespace Frotz.Generic
 
             /* Resulting value lies on top of the stack */
 
-            return (short)Main.Stack[Main.sp++];
+            return 0;
 
         }/* direct_call */
 
@@ -558,9 +440,7 @@ namespace Frotz.Generic
          *
          */
 
-        internal static void ZCatch() =>
-            Process.Store((zword)(Main.option_save_quetzal == true ? Main.frame_count : Main.fp));/* z_catch */
-
+        internal static void ZCatch() { }
         /*
          * z_throw, go back to the given stack frame and return the given value.
          *
@@ -571,25 +451,7 @@ namespace Frotz.Generic
 
         internal static void ZThrow()
         {
-            // TODO This has never been tested
-            if (Main.option_save_quetzal == true)
-            {
-                if (zargs[1] > Main.frame_count)
-                    Err.RuntimeError(ErrorCodes.ERR_BAD_FRAME);
-
-                /* Unwind the stack a frame at a time. */
-                for (; Main.frame_count > zargs[1]; --Main.frame_count)
-                    //fp = stack + 1 + fp[1];
-                    Main.fp = 1 + Main.Stack[Main.fp + 1]; // TODO I think this is correct
-            }
-            else
-            {
-                if (zargs[1] > General.STACK_SIZE)
-                    Err.RuntimeError(ErrorCodes.ERR_BAD_FRAME);
-
-                Main.fp = zargs[1]; // fp = stack + zargs[1];
-            }
-
+     
             Ret(zargs[0]);
 
         }/* z_throw */
@@ -642,11 +504,7 @@ namespace Frotz.Generic
         internal static void ZCheckArgCount()
         {
 
-            if (Main.fp == General.STACK_SIZE)
-                Branch(zargs[0] == 0);
-            else
-                Branch(zargs[0] <= (zword)(Main.Stack[Main.fp] & 0xff)); //   (*fp & 0xff));
-
+ 
         }/* z_check_arg_count */
 
         /*
@@ -659,14 +517,6 @@ namespace Frotz.Generic
         internal static void ZJump()
         {
 
-            FastMem.GetPc(out long pc);
-
-            pc += (short)zargs[0] - 2; // TODO This actually counts on an overflow to work
-
-            if (pc >= Main.StorySize)
-                Err.RuntimeError(ErrorCodes.ERR_ILL_JUMP_ADDR);
-
-            FastMem.SetPc(pc);
 
         }/* z_jump */
 
@@ -709,7 +559,7 @@ namespace Frotz.Generic
          *
          */
 
-        internal static void ZRetPopped() => Ret(Main.Stack[Main.sp++]);// ret (*sp++);/* z_ret_popped */
+        internal static void ZRetPopped() {}// ret (*sp++);/* z_ret_popped */
 
         /*
          * z_rfalse, return from a subroutine with false (0).

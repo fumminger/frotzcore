@@ -83,13 +83,7 @@ namespace Frotz.Generic
         internal static zword WinArg0()
         {
 
-            if (Main.h_version == ZMachine.V6 && (short)Process.zargs[0] == -3)
-                return Main.cwin;
-
-            if (Process.zargs[0] >= ((Main.h_version == ZMachine.V6) ? 8 : 2))
-                Err.RuntimeError(ErrorCodes.ERR_ILL_WIN);
-
-            return Process.zargs[0];
+            return 0;
 
         }/* winarg0 */
 
@@ -105,13 +99,7 @@ namespace Frotz.Generic
         internal static zword WinArg2()
         {
 
-            if (Process.zargc < 3 || (short)Process.zargs[2] == -3)
-                return Main.cwin;
-
-            if (Process.zargs[2] >= 8)
-                Err.RuntimeError(ErrorCodes.ERR_ILL_WIN);
-
-            return Process.zargs[2];
+            return 0;
 
         }/* winarg2 */
 
@@ -139,16 +127,7 @@ namespace Frotz.Generic
 
         private static void ResetCursor(zword win)
         {
-            int lines = 0;
 
-            if (Main.h_version <= ZMachine.V4 && win == 0)
-                lines = wp[0].YSize / FastMem.Hi(wp[0].font_size) - 1;
-
-            wp[win].y_cursor = (zword)(FastMem.Hi(wp[0].font_size) * lines + 1);
-            wp[win].x_cursor = (zword)(wp[win].left + 1);
-
-            if (win == Main.cwin)
-                UpdateCursor();
 
         }/* reset_cursor */
 
@@ -162,18 +141,6 @@ namespace Frotz.Generic
 
         internal static bool AmigaScreenModel()
         {
-            if (Main.h_interpreter_number == ZMachine.INTERP_AMIGA)
-            {
-                switch (Main.StoryId)
-                {
-                    case Story.BEYOND_ZORK:
-                    case Story.ZORK_ZERO:
-                    case Story.SHOGUN:
-                    case Story.ARTHUR:
-                    case Story.JOURNEY:
-                        return true;
-                }
-            }
 
             return false;
 
@@ -222,19 +189,7 @@ namespace Frotz.Generic
 
         internal static zword GetMaxWidth(zword win)
         {
-            if (Main.h_version == ZMachine.V6)
-            {
-
-                if (win >= 8)
-                    Err.RuntimeError(ErrorCodes.ERR_ILL_WIN);
-
-                return (zword)(wp[win].XSize - wp[win].left - wp[win].right);
-
-            }
-            else
-            {
-                return 0xffff;
-            }
+            return 0;
         }/* get_max_width */
 
         /*
@@ -262,78 +217,7 @@ namespace Frotz.Generic
 
         internal static void ScreenNewline()
         {
-            if (discarding) return;
 
-            if (OS.WrapWindow(CwpIndex()) == 0)
-                OS.DisplayChar('\n');
-
-            /* Handle newline interrupts at the start (for most cases) */
-
-            if (Main.h_interpreter_number != ZMachine.INTERP_MSDOS || Main.StoryId != Story.ZORK_ZERO || Main.h_release != 393)
-                Countdown();
-
-            /* Check whether the last input line gets destroyed */
-
-            if (input_window == Main.cwin)
-                input_redraw = true;
-
-            /* If the cursor has not reached the bottom line, then move it to
-               the next line; otherwise scroll the window or reset the cursor
-               to the top left. */
-
-            cwp.x_cursor = (zword)((cwp.left + 1));
-
-            if (cwp.y_cursor + 2 * font_height - 1 > cwp.YSize)
-            {
-                if (Main.enable_scrolling)
-                {
-
-                    zword y = cwp.YPos;
-                    zword x = cwp.XPos;
-
-                    OS.ScrollArea(y, x,
-                        y + cwp.YSize - 1,
-                        x + cwp.XSize - 1,
-                        font_height);
-
-                }
-                else
-                {
-                    cwp.y_cursor = 1;
-                }
-            }
-            else
-            {
-                cwp.y_cursor += font_height;
-            }
-
-            UpdateCursor();
-
-            /* See if we need to print a more prompt (unless the game has set
-               the line counter to -999 in order to suppress more prompts). */
-
-            if (Main.enable_scrolling && (short)cwp.line_count != -999)
-            {
-                zword above = (zword)((cwp.y_cursor - 1) / font_height);
-                zword below = (zword)((cwp.YSize - cwp.y_cursor + 1) / font_height);
-
-                cwp.line_count++;
-
-                if ((short)cwp.line_count >= (short)above + below - 1)
-                {
-
-                    if (more_prompts)
-                        OS.MorePrompt();
-
-                    cwp.line_count = Main.option_context_lines;
-
-                }
-            }
-
-            /* Handle newline interrupts at the end for Zork Zero under DOS */
-
-            if (Main.h_interpreter_number == ZMachine.INTERP_MSDOS && Main.StoryId == Story.ZORK_ZERO && Main.h_release == 393)
-                Countdown();
 
         }/* screen_new_line */
 
@@ -353,19 +237,6 @@ namespace Frotz.Generic
             if (c == CharCodes.ZC_INDENT && cwp.x_cursor != cwp.left + 1)
                 c = ' ';
 
-            if (UnitsLeft() < (width = OS.CharWidth(c)))
-            {
-                if (!Main.enable_wrapping)
-                {
-                    cwp.x_cursor = (zword)(cwp.XSize - cwp.right);
-                    return;
-                }
-
-                ScreenNewline();
-
-            }
-
-            OS.DisplayChar(c); cwp.x_cursor += (zword)width;
 
         }/* screen_char */
 
@@ -391,30 +262,6 @@ namespace Frotz.Generic
             if (UnitsLeft() < (width = OS.StringWidth(buf)))
             {
 
-                if (!Main.enable_wrapping)
-                {
-                    zword c;
-
-                    while (pos++ < buf.Length && (c = buf[pos]) != 0)
-                    {
-                        if (c is CharCodes.ZC_NEW_FONT or CharCodes.ZC_NEW_STYLE)
-                        {
-                            int arg = buf[pos++];
-
-                            if (c == CharCodes.ZC_NEW_FONT)
-                                OS.SetFont(arg);
-                            if (c == CharCodes.ZC_NEW_STYLE)
-                                OS.SetTextStyle(arg);
-                        }
-                        else
-                        {
-                            ScreenChar(c);
-                        }
-                    }
-
-                    return;
-
-                }
 
                 if (buf[pos] is ' ' or CharCodes.ZC_INDENT or CharCodes.ZC_GAP)
                     width = OS.StringWidth(buf.Slice(++pos));
@@ -490,17 +337,9 @@ namespace Frotz.Generic
             zword key;
             int i;
 
-            /* Make sure there is some space for input */
-
-            if (Main.cwin == 0 && UnitsLeft() + OS.StringWidth(buf) < 10 * font_width)
-                ScreenNewline();
-
-            /* Make sure the input line is visible */
-
             if (continued && input_redraw)
                 ScreenWriteInput(buf, zword.MaxValue); // TODO second value was -1, interestingly enough
 
-            input_window = Main.cwin;
             input_redraw = false;
 
             /* Get input line from IO interface */
@@ -558,26 +397,7 @@ namespace Frotz.Generic
 
         internal static void UpdateAttributes()
         {
-            zword attr = cwp.attribute;
 
-            Main.enable_wrapping = (attr & 1) > 0;
-            Main.enable_scrolling = (attr & 2) > 0;
-            Main.enable_scripting = (attr & 4) > 0;
-            Main.enable_buffering = (attr & 8) > 0;
-
-            /* Some story files forget to select wrapping for printing hints */
-
-            if (Main.StoryId == Story.ZORK_ZERO && Main.h_release == 366)
-            {
-                if (Main.cwin == 0)
-                    Main.enable_wrapping = true;
-            }
-
-            if (Main.StoryId == Story.SHOGUN && Main.h_release <= 295)
-            {
-                if (Main.cwin == 0)
-                    Main.enable_wrapping = true;
-            }
         }/* update_attributes */
 
         /*
@@ -591,33 +411,7 @@ namespace Frotz.Generic
 
         internal static void RefreshTextStyle()
         {
-            zword style;
 
-            if (Main.h_version != ZMachine.V6)
-            {
-
-                style = wp[0].style;
-
-                if (Main.cwin != 0 || (Main.h_flags & ZMachine.FIXED_FONT_FLAG) > 0)
-                    style |= ZStyles.FIXED_WIDTH_STYLE;
-
-            }
-            else
-            {
-                style = cwp.style;
-            }
-
-            if (!Main.ostream_memory && Main.ostream_screen && Main.enable_buffering)
-            {
-
-                Buffer.PrintChar(CharCodes.ZC_NEW_STYLE);
-                Buffer.PrintChar(style);
-
-            }
-            else
-            {
-                OS.SetTextStyle(style);
-            }
         }/* refresh_text_style */
 
         /*
@@ -631,31 +425,6 @@ namespace Frotz.Generic
         private static void SetWindow(zword win)
         {
             Buffer.FlushBuffer();
-
-            Main.cwin = win; cwp = wp[win];
-
-            UpdateAttributes();
-
-            if (Main.h_version == ZMachine.V6)
-            {
-                OS.SetColor(FastMem.Lo(cwp.colour), FastMem.Hi(cwp.colour));
-
-                if (OS.FontData(cwp.font, ref font_height, ref font_width))
-                    OS.SetFont(cwp.font);
-
-                OS.SetTextStyle(cwp.style);
-
-            }
-            else
-            {
-                RefreshTextStyle();
-            }
-
-            if (Main.h_version != ZMachine.V6 && win != 0)
-            {
-                wp[win].y_cursor = 1;
-                wp[win].x_cursor = 1;
-            }
 
             UpdateCursor();
 
@@ -675,9 +444,6 @@ namespace Frotz.Generic
             zword y = wp[win].YPos;
             zword x = wp[win].XPos;
 
-            if (Main.h_version == ZMachine.V6 && win != Main.cwin && !Screen.AmigaScreenModel())
-                OS.SetColor(FastMem.Lo(wp[win].colour), FastMem.Hi(wp[win].colour));
-
             if (FastMem.Hi(wp[win].colour) != ZColor.TRANSPARENT_COLOUR)
             {
 
@@ -688,8 +454,6 @@ namespace Frotz.Generic
 
             }
 
-            if (Main.h_version == ZMachine.V6 && win != Main.cwin && !AmigaScreenModel())
-                OS.SetColor(FastMem.Lo(cwp.colour), FastMem.Hi(cwp.colour));
 
             ResetCursor(win);
 
@@ -711,22 +475,6 @@ namespace Frotz.Generic
 
             Buffer.FlushBuffer();
 
-            /* Calculate height of status line and upper window */
-
-            if (Main.h_version != ZMachine.V6)
-                height *= FastMem.Hi(wp[1].font_size);
-
-            if (Main.h_version <= ZMachine.V3)
-            {
-                stat_height = FastMem.Hi(wp[7].font_size);
-                wp[7].YSize = stat_height;
-                OS.SetWindowSize(7, wp[7]);
-            }
-            else
-            {
-                wp[7].YSize = 0;
-            }
-
             /* Cursor of upper window mustn't be swallowed by the lower window */
 
             wp[1].y_cursor += (zword)(wp[1].YPos - 1 - stat_height);
@@ -742,15 +490,11 @@ namespace Frotz.Generic
             wp[0].y_cursor += (zword)(wp[0].YPos - 1 - stat_height - height);
 
             wp[0].YPos = (zword)(1 + stat_height + height);
-            wp[0].YSize = (zword)(Main.h_screen_height - stat_height - height);
 
             if ((short)wp[0].y_cursor < 1)
                 ResetCursor(0);
 
             /* Erase the upper window in V3 only */
-
-            if (Main.h_version == ZMachine.V3 && height != 0)
-                EraseWindow(1);
 
             OS.SetWindowSize(0, wp[0]);
             OS.SetWindowSize(1, wp[1]);
@@ -767,9 +511,6 @@ namespace Frotz.Generic
         private static void EraseScreen(zword win)
         {
             int i;
-
-            if (FastMem.Hi(cwp.colour) != ZColor.TRANSPARENT_COLOUR)
-                OS.EraseArea(1, 1, Main.h_screen_height, Main.h_screen_width, -2);
 
             if (win == zword.MaxValue)
             {
@@ -851,8 +592,6 @@ namespace Frotz.Generic
         {
             /* Use default settings */
 
-            OS.SetColor(Main.h_default_foreground, Main.h_default_background);
-
             if (OS.FontData(ZFont.TEXT_FONT, ref font_height, ref font_width))
                 OS.SetFont(ZFont.TEXT_FONT);
 
@@ -879,12 +618,12 @@ namespace Frotz.Generic
                     nl_routine = 0,
                     nl_countdown = 0,
                     style = 0,
-                    colour = (ushort)((Main.h_default_background << 8) | Main.h_default_foreground),
+                    colour = 0,
                     font = ZFont.TEXT_FONT,
                     font_size = (ushort)((font_height << 8) | font_width),
                     attribute = 8,
-                    true_fore = Main.hx_fore_colour,
-                    true_back = Main.hx_back_colour,
+                    true_fore = 0,
+                    true_back = 0,
 
                     index = i
                 };
@@ -896,14 +635,6 @@ namespace Frotz.Generic
 
             wp[0].attribute = 15;
 
-            wp[0].left = Main.option_left_margin;
-            wp[0].right = Main.option_right_margin;
-
-            wp[0].XSize = Main.h_screen_width;
-            wp[1].XSize = Main.h_screen_width;
-
-            if (Main.h_version <= ZMachine.V3)
-                wp[7].XSize = Main.h_screen_width;
 
             OS.RestartGame(ZMachine.RESTART_WPROP_SET);
             /* Clear the screen, unsplit it and select window 0 */
@@ -922,36 +653,6 @@ namespace Frotz.Generic
         internal static bool ValidateClick()
         {
 
-            if (Main.mwin >= 0)
-            {
-
-                if (Main.MouseY < wp[Main.mwin].YPos || Main.MouseY >= wp[Main.mwin].YPos + wp[Main.mwin].YSize)
-                    return false;
-                if (Main.MouseX < wp[Main.mwin].XPos || Main.MouseX >= wp[Main.mwin].XPos + wp[Main.mwin].XSize)
-                    return false;
-
-            }
-            else
-            {
-
-                if (Main.MouseY < 1 || Main.MouseY > Main.h_screen_height)
-                    return false;
-                if (Main.MouseX < 1 || Main.MouseX > Main.h_screen_width)
-                    return false;
-            }
-
-            Main.hx_mouse_y = Main.MouseY;
-            Main.hx_mouse_x = Main.MouseX;
-
-            if (Main.h_version != ZMachine.V6)
-            {
-                Main.hx_mouse_y = (ushort)((Main.hx_mouse_y - 1) / Main.h_font_height + 1);
-                Main.hx_mouse_x = (ushort)((Main.hx_mouse_x - 1) / Main.h_font_width + 1);
-            }
-
-            FastMem.SetHeaderExtension(ZMachine.HX_MOUSE_Y, Main.hx_mouse_y);
-            FastMem.SetHeaderExtension(ZMachine.HX_MOUSE_X, Main.hx_mouse_x);
-
             return true;
         }/* validate_click */
 
@@ -966,18 +667,7 @@ namespace Frotz.Generic
         internal static void ScreenMssgOn()
         {
 
-            if (Main.cwin == 0)
-            {       /* messages in window 0 only */
 
-                OS.SetTextStyle(0);
-
-                if (cwp.x_cursor != cwp.left + 1)
-                    ScreenNewline();
-
-                ScreenChar(CharCodes.ZC_INDENT);
-
-            }
-            else
             {
                 discarding = true;    /* discard messages in other windows */
             }
@@ -992,15 +682,7 @@ namespace Frotz.Generic
 
         internal static void ScreenMssgOff()
         {
-            if (Main.cwin == 0)
-            {       /* messages in window 0 only */
 
-                ScreenNewline();
-
-                RefreshTextStyle();
-
-            }
-            else
             {
                 discarding = false;   /* message has been discarded */
             }
@@ -1014,29 +696,7 @@ namespace Frotz.Generic
          */
 
         internal static void ZBufferMode()
-        {
-            /* Infocom's V6 games rarely use the buffer_mode opcode. If they do
-               then only to print text immediately, without any delay. This was
-               used to give the player some sign of life while the game was
-               spending much time on parsing a complicated input line. (To turn
-               off word wrapping, V6 games use the window_style opcode instead.)
-               Today we can afford to ignore buffer_mode in V6. */
-
-            if (Main.h_version != ZMachine.V6)
-            {
-                Buffer.FlushBuffer();
-
-                zword temp = 8; // TODO No idea what this math will be like //'
-
-                wp[0].attribute &= (zword)(~temp);
-
-                if (Process.zargs[0] != 0)
-                    wp[0].attribute |= 8;
-
-                UpdateAttributes();
-
-            }
-
+        { 
         }/* z_buffer_mode */
 
         /*
@@ -1073,32 +733,11 @@ namespace Frotz.Generic
                Zork Zero were split into several MCGA pictures (left, right
                and top borders).  We pretend this has not happened. */
 
-            for (i = 0; mapper[i].story_id != Story.UNKNOWN; i++)
-            {
-                if (Main.StoryId == mapper[i].story_id && pic == mapper[i].pic)
-                {
-                    int delta = 0;
 
-                    OS.PictureData(pic, out int height1, out int width1);
-                    OS.PictureData(mapper[i].pic2, out _, out int width2);
-
-                    if (Main.StoryId == Story.ARTHUR && pic == 54)
-                        delta = Main.h_screen_width / 160;
-
-                    OS.DrawPicture(mapper[i].pic1, y + height1, x + delta);
-                    OS.DrawPicture(mapper[i].pic2, y + height1, x + width1 - width2 - delta);
-                }
-            }
 
             OS.DrawPicture(pic, y, x);
 
-            if (Main.StoryId == Story.SHOGUN)
-            {
-                if (pic == 3)
-                {
-                    OS.PictureData(59, out _, out _);
-                }
-            }
+
         }/* z_draw_picture */
 
         /*
@@ -1205,11 +844,6 @@ namespace Frotz.Generic
             y = cwp.y_cursor;
             x = cwp.x_cursor;
 
-            if (Main.h_version != ZMachine.V6)
-            {   /* convert to grid positions */
-                y = (zword)((y - 1) / Main.h_font_height + 1);
-                x = (zword)((x - 1) / Main.h_font_width + 1);
-            }
 
             FastMem.StoreW((zword)(Process.zargs[0] + 0), y);
             FastMem.StoreW((zword)(Process.zargs[0] + 2), x);
@@ -1270,7 +904,7 @@ namespace Frotz.Generic
          *
          */
 
-        internal static void ZMouseWindow() => Main.mwin = ((short)Process.zargs[0] == -1) ? -1 : Screen.WinArg0();/* z_mouse_window */
+        internal static void ZMouseWindow() {}/* z_mouse_window */
 
         /*
          * z_move_window, place a window on the screen.
@@ -1290,8 +924,6 @@ namespace Frotz.Generic
             wp[win].YPos = Process.zargs[1];
             wp[win].XPos = Process.zargs[2];
 
-            if (win == Main.cwin)
-                UpdateCursor();
 
         }/* z_move_window */
 
@@ -1312,25 +944,6 @@ namespace Frotz.Generic
 
             bool avail = OS.PictureData(pic, out int height, out int width);
 
-            for (i = 0; mapper[i].story_id != Story.UNKNOWN; i++)
-            {
-                if (Main.StoryId == mapper[i].story_id)
-                {
-
-                    if (pic == mapper[i].pic)
-                    {
-                        avail &= OS.PictureData(mapper[i].pic1, out _, out _);
-                        avail &= OS.PictureData(mapper[i].pic2, out int height2, out _);
-
-                        height += height2;
-
-                    }
-                    else if (pic == mapper[i].pic1 || pic == mapper[i].pic2)
-                    {
-                        avail = false;
-                    }
-                }
-            }
 
             FastMem.StoreW((zword)(table + 0), (zword)(height));
             FastMem.StoreW((zword)(table + 2), (zword)(width));
@@ -1474,8 +1087,6 @@ namespace Frotz.Generic
 
             /* Use the correct set of colours when scrolling the window */
 
-            if (win != Main.cwin && !AmigaScreenModel())
-                OS.SetColor(FastMem.Lo(wp[win].colour), FastMem.Hi(wp[win].colour));
 
             y = wp[win].YPos;
             x = wp[win].XPos;
@@ -1485,8 +1096,6 @@ namespace Frotz.Generic
                 x + wp[win].XSize - 1,
                 (short)Process.zargs[1]);
 
-            if (win != Main.cwin && !AmigaScreenModel())
-                OS.SetColor(FastMem.Lo(cwp.colour), FastMem.Hi(cwp.colour));
 
         }/* z_scroll_window */
 
@@ -1501,64 +1110,7 @@ namespace Frotz.Generic
 
         internal static void ZSetColor()
         {
-            zword win = (zword)((Main.h_version == ZMachine.V6) ? WinArg2() : 0);
-
-            zword fg = Process.zargs[0];
-            zword bg = Process.zargs[1];
-
-            Buffer.FlushBuffer();
-
-            if ((short)fg == -1)    /* colour -1 is the colour at the cursor */
-                fg = OS.PeekColor();
-            if ((short)bg == -1)
-                bg = OS.PeekColor();
-
-            if (fg == 0)        /* colour 0 means keep current colour */
-                fg = FastMem.Lo(wp[win].colour);
-            if (bg == 0)
-                bg = FastMem.Hi(wp[win].colour);
-
-            if (fg == 1)        /* colour 1 is the system default colour */
-                fg = Main.h_default_foreground;
-            if (bg == 1)
-                bg = Main.h_default_background;
-
-            if (fg == ZColor.TRANSPARENT_COLOUR)
-                fg = FastMem.Lo(wp[win].colour);
-            if (bg == ZColor.TRANSPARENT_COLOUR && ((Main.hx_flags & ZMachine.TRANSPARENT_FLAG) == 0))
-                bg = FastMem.Hi(wp[win].colour);
-
-            if (Main.h_version == ZMachine.V6 && AmigaScreenModel())
-            {
-                /* Changing colours of window 0 affects the entire screen */
-
-                if (win == 0)
-                {
-
-                    int i;
-
-                    for (i = 1; i < 8; i++)
-                    {
-
-                        zword bg2 = FastMem.Hi(wp[i].colour);
-                        zword fg2 = FastMem.Lo(wp[i].colour);
-
-                        if (bg2 < 16)
-                            bg2 = (bg2 == FastMem.Lo(wp[0].colour)) ? fg : bg;
-                        if (fg2 < 16)
-                            fg2 = (fg2 == FastMem.Lo(wp[0].colour)) ? fg : bg;
-
-                        wp[i].colour = (zword)((bg2 << 8) | fg2);
-
-                    }
-
-                }
-            }
-
-            wp[win].colour = (zword)((bg << 8) | fg);
-
-            if (win == Main.cwin || Main.h_version != ZMachine.V6)
-                OS.SetColor(fg, bg);
+         
 
         }/* z_set_colour */
 
@@ -1574,41 +1126,7 @@ namespace Frotz.Generic
 
         internal static void ZSetTrueColor()
         {
-            zword win = (zword)((Main.h_version == ZMachine.V6) ? WinArg2() : 0);
-
-            zword true_fg = Process.zargs[0];
-            zword true_bg = Process.zargs[1];
-            Buffer.FlushBuffer();
-
-            ushort fg = ((short)true_fg) switch
-            {
-                /* colour -1 is the system default colour */
-                -1 => Main.h_default_foreground,
-                /* colour -2 means keep current colour */
-                -2 => FastMem.Lo(wp[win].colour),
-                /* colour -3 is the colour at the cursor */
-                -3 => OS.PeekColor(),
-                -4 => FastMem.Lo(wp[win].colour),
-                _ => OS.FromTrueColor(true_fg),
-            };
-
-            ushort bg = ((short)true_bg) switch
-            {
-                /* colour -1 is the system default colour */
-                -1 => Main.h_default_background,
-                /* colour -2 means keep current colour */
-                -2 => FastMem.Hi(wp[win].colour),
-                /* colour -3 is the colour at the cursor */
-                -3 => OS.PeekColor(),
-                /* colour -4 means transparent */
-                -4 => (Main.hx_flags & ZMachine.TRANSPARENT_FLAG) > 0
-                        ? ZColor.TRANSPARENT_COLOUR : FastMem.Hi(wp[win].colour),
-                _ => OS.FromTrueColor(true_bg),
-            };
-            wp[win].colour = (zword)((bg << 8) | fg);
-
-            if (win == Main.cwin || Main.h_version != ZMachine.V6)
-                OS.SetColor(fg, bg);
+     
 
         }
 
@@ -1625,54 +1143,8 @@ namespace Frotz.Generic
             zword font = Process.zargs[0];
             zword win = 0;
 
-            if (Main.h_version == ZMachine.V6)
-            {
 
-                if (Process.zargc < 2 || (short)Process.zargs[1] == -3)
-                    win = Main.cwin;
-                else if (Process.zargs[1] >= 8)
-                    Err.RuntimeError(ErrorCodes.ERR_ILL_WIN);
-                else
-                    win = Process.zargs[1];
 
-            }
-
-            if (font != 0)
-            {
-
-                if (OS.FontData(font, ref font_height, ref font_width))
-                {
-
-                    Process.Store(wp[win].font);
-
-                    wp[win].font = font;
-                    wp[win].font_size = (zword)((font_height << 8) | font_width);
-
-                    if ((Main.h_version != ZMachine.V6) || (win == Main.cwin))
-                    {
-
-                        if (!Main.ostream_memory && Main.ostream_screen && Main.enable_buffering)
-                        {
-
-                            Buffer.PrintChar(CharCodes.ZC_NEW_FONT);
-                            Buffer.PrintChar(font);
-
-                        }
-                        else
-                        {
-                            OS.SetFont(font);
-                        }
-                    }
-                }
-                else
-                {
-                    Process.Store(0);
-                }
-            }
-            else
-            {
-                Process.Store(wp[win].font);
-            }
         }/* z_set_font */
 
         /*
@@ -1686,7 +1158,7 @@ namespace Frotz.Generic
 
         internal static void ZSetCursor()
         {
-            zword win = (zword)((Main.h_version == ZMachine.V6) ? WinArg2() : 1);
+            zword win = 1;
 
             zword y = Process.zargs[0];
             zword x = Process.zargs[1];
@@ -1714,16 +1186,7 @@ namespace Frotz.Generic
 
             /* Convert grid positions to screen units if this is not V6 */
 
-            if (Main.h_version != ZMachine.V6)
-            {
 
-                if (Main.cwin == 0)
-                    return;
-
-                y = (zword)((y - 1) * Main.h_font_height + 1);
-                x = (zword)((x - 1) * Main.h_font_width + 1);
-
-            }
 
             /* Protect the margins */
 
@@ -1739,8 +1202,7 @@ namespace Frotz.Generic
             wp[win].y_cursor = y;
             wp[win].x_cursor = x;
 
-            if (win == Main.cwin)
-                UpdateCursor();
+
 
         }/* z_set_cursor */
 
@@ -1768,8 +1230,6 @@ namespace Frotz.Generic
             {
                 wp[win].x_cursor = (zword)(Process.zargs[0] + 1);
 
-                if (win == Main.cwin)
-                    UpdateCursor();
             }
 
         }/* z_set_margins */
@@ -1783,13 +1243,8 @@ namespace Frotz.Generic
 
         internal static void ZSetTextStyle()
         {
-            zword win = (zword)((Main.h_version == ZMachine.V6) ? Main.cwin : 0);
-            zword style = Process.zargs[0];
 
-            wp[win].style |= style;
 
-            if (style == 0)
-                wp[win].style = 0;
 
             RefreshTextStyle();
 
@@ -1838,84 +1293,14 @@ namespace Frotz.Generic
 
             bool brief = false;
 
-            /* One V5 game (Wishbringer Solid Gold) contains this opcode by
-               accident, so just return if the version number does not fit */
-
-            if (Main.h_version >= ZMachine.V4)
-                return;
-
-            /* Read all relevant global variables from the memory of the
-               Z-machine into local variables */
-
-            addr = Main.h_globals;
-            FastMem.LowWord(addr, out zword global0);
-            addr += 2;
-            FastMem.LowWord(addr, out zword global1);
-            addr += 2;
-            FastMem.LowWord(addr, out zword global2);
-
-            /* Frotz uses window 7 for the status line. Don't forget to select
-               reverse and fixed width text style */
+ 
 
             SetWindow(7);
 
             Buffer.PrintChar(CharCodes.ZC_NEW_STYLE);
             Buffer.PrintChar(ZStyles.REVERSE_STYLE | ZStyles.FIXED_WIDTH_STYLE);
 
-            /* If the screen width is below 55 characters then we have to use
-               the brief status line format */
-
-            if (Main.h_screen_cols < 55)
-                brief = true;
-
-            /* Print the object description for the global variable 0 */
-
-            Buffer.PrintChar(' ');
-            Text.PrintObject(global0);
-
-            /* A header flag tells us whether we have to display the current
-               time or the score/moves information */
-
-            if ((Main.h_config & ZMachine.CONFIG_TIME) > 0)
-            {   /* print hours and minutes */
-
-                zword hours = (zword)((global1 + 11) % 12 + 1);
-
-                PadStatusLine(brief ? 15 : 20);
-
-                Text.PrintString("Time: ");
-
-                if (hours < 10)
-                    Buffer.PrintChar(' ');
-                Text.PrintNum(hours);
-
-                Buffer.PrintChar(':');
-
-                if (global2 < 10)
-                    Buffer.PrintChar('0');
-                Text.PrintNum(global2);
-
-                Buffer.PrintChar(' ');
-
-                Buffer.PrintChar((global1 >= 12) ? 'p' : 'a');
-                Buffer.PrintChar('m');
-
-            }
-            else
-            {               /* print score and moves */
-
-                PadStatusLine(brief ? 15 : 30);
-
-                Text.PrintString(brief ? "S: " : "Score: ");
-                Text.PrintNum(global1);
-
-                PadStatusLine(brief ? 8 : 14);
-
-                Text.PrintString(brief ? "M: " : "Moves: ");
-                Text.PrintNum(global2);
-
-            }
-
+    
             /* Pad the end of the status line with spaces */
 
             PadStatusLine(0);
@@ -1993,8 +1378,7 @@ namespace Frotz.Generic
                 case 3: wp[win].attribute ^= flags; break;
             }
 
-            if (Main.cwin == win)
-                UpdateAttributes();
+
 
         }/* z_window_style */
 
@@ -2021,29 +1405,7 @@ namespace Frotz.Generic
          */
         internal static zword GetWindowFont(zword win)
         {
-            zword font = wp[win].font;
-
-            if (font == ZFont.TEXT_FONT)
-            {
-                if (Main.h_version != ZMachine.V6)
-                {
-
-                    if ((win != 0 || (Main.h_flags & ZMachine.FIXED_FONT_FLAG) > 0))
-
-                        font = ZFont.FIXED_WIDTH_FONT;
-
-                }
-                else
-                {
-
-                    if ((wp[win].style & ZStyles.FIXED_WIDTH_STYLE) > 0)
-
-                        font = ZFont.FIXED_WIDTH_FONT;
-
-                }
-            }
-
-            return font;
+            return 0;
 
         }/* get_window_font */
 
@@ -2055,19 +1417,6 @@ namespace Frotz.Generic
          */
         internal static int ColorInUse(zword color)
         {
-            int max = (Main.h_version == ZMachine.V6) ? 8 : 2;
-            int i;
-
-            for (i = 0; i < max; i++)
-            {
-
-                zword bg = FastMem.Hi(wp[i].colour);
-                zword fg = FastMem.Lo(wp[i].colour);
-
-                if (color == fg || color == bg)
-                    return 1;
-            }
-
             return 0;
 
         }/* colour_in_use */

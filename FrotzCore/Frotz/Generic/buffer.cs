@@ -88,43 +88,6 @@ namespace Frotz.Generic
         private static bool PrintCharFlag = false;
         internal static void PrintChar(zword c)
         {
-            if (Main.message || Main.ostream_memory || Main.enable_buffering)
-            {
-                if (!PrintCharFlag)
-                {
-                    /* Characters 0 and ZC_RETURN are special cases */
-
-                    if (c == CharCodes.ZC_RETURN) { NewLine(); return; }
-                    if (c == 0)
-                        return;
-
-                    /* Flush the buffer before a whitespace or after a hyphen */
-
-                    if ((c is ' ' or CharCodes.ZC_INDENT or CharCodes.ZC_GAP) || (prev_c == '-' && c != '-'))
-                        FlushBuffer();
-
-                    /* Set the flag if this is part one of a style or font change */
-
-                    if (c is CharCodes.ZC_NEW_FONT or CharCodes.ZC_NEW_STYLE)
-                        PrintCharFlag = true;
-
-                    /* Remember the current character code */
-
-                    prev_c = c;
-                }
-                else
-                {
-                    PrintCharFlag = false;
-                }
-
-                /* Insert the character into the buffer */
-
-                buffer_var[bufpos++] = c;
-
-                if (bufpos == General.TEXT_BUFFER_SIZE)
-                    Err.RuntimeError(ErrorCodes.ERR_TEXT_BUF_OVF);
-            }
-            else
             {
                 Stream.StreamChar(c);
             }

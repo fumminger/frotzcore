@@ -47,25 +47,6 @@ namespace Frotz.Generic
             if (key is >= CharCodes.ZC_HKEY_MIN and <= CharCodes.ZC_HKEY_MAX)
                 return true;
 
-            if (Main.h_terminating_keys != 0)
-            {
-                if (key is >= CharCodes.ZC_ARROW_MIN and <= CharCodes.ZC_MENU_CLICK)
-                {
-
-                    zword addr = Main.h_terminating_keys;
-                    zbyte c;
-
-                    do
-                    {
-                        FastMem.LowByte(addr, out c);
-                        if (c == 0xff || key == Text.TranslateFromZscii(c))
-                            return true;
-                        addr++;
-                    } while (c != 0);
-
-                }
-            }
-
             return false;
 
         }/* is_terminator */
@@ -81,47 +62,7 @@ namespace Frotz.Generic
 
         internal static void ZMakeMenu()
         {
-            /* This opcode was only used for the Macintosh version of Journey.
-               It controls menus with numbers greater than 2 (menus 0, 1 and 2
-               are system menus). */
-
-            if (Process.zargs[0] < 3)
-            {
-                Process.Branch(false);
-                return;
-            }
-
-            if (Process.zargs[1] != 0)
-            {
-                FastMem.LowWord(Process.zargs[1], out zword items);
-
-                for (int i = 0; i < items; i++)
-                {
-                    FastMem.LowWord(Process.zargs[1] + 2 + (2 * i), out zword item);
-                    FastMem.LowByte(item, out zbyte length);
-
-                    if (length > 31)
-                        length = 31;
-                    menu[length] = 0;
-
-                    for (int j = 0; j < length; j++)
-                    {
-                        FastMem.LowByte(item + j + 1, out zbyte c);
-                        menu[j] = Text.TranslateFromZscii(c);
-                    }
-
-                    if (i == 0)
-                        OS.Menu(ZMachine.MENU_NEW, Process.zargs[0], menu);
-                    else
-                        OS.Menu(ZMachine.MENU_ADD, Process.zargs[0], menu);
-                }
-            }
-            else
-            {
-                OS.Menu(ZMachine.MENU_REMOVE, Process.zargs[0], Array.Empty<zword>());
-            }
-
-            Process.Branch(true);
+    
 
         }/* z_make_menu */
 
@@ -185,13 +126,6 @@ namespace Frotz.Generic
             int value = 0;
             int i;
 
-            Input.ReadString(5, buffer);
-
-            for (i = 0; buffer[i] != 0; i++)
-            {
-                if (buffer[i] is >= '0' and <= '9')
-                    value = 10 * value + buffer[i] - '0';
-            }
 
             return value;
 
@@ -226,86 +160,12 @@ namespace Frotz.Generic
 
             FastMem.LowByte(addr, out zbyte max);
 
-            if (Main.h_version <= ZMachine.V4)
-                max--;
 
             if (max >= General.INPUT_BUFFER_SIZE)
                 max = General.INPUT_BUFFER_SIZE - 1;
+    
 
-            /* Get initial input size */
 
-            if (Main.h_version >= ZMachine.V5)
-            {
-                addr++;
-                FastMem.LowByte(addr, out size);
-            }
-            else
-            {
-                size = 0;
-            }
-
-            /* Copy initial input to local buffer */
-
-            for (i = 0; i < size; i++)
-            {
-                addr++;
-                FastMem.LowByte(addr, out zbyte c);
-                buffer[i] = Text.TranslateFromZscii(c);
-            }
-
-            buffer[i] = 0;
-
-            /* Draw status line for V1 to V3 games */
-
-            if (Main.h_version <= ZMachine.V3)
-                Screen.ZShowStatus();
-
-            /* Read input from current input stream */
-
-            key = Stream.StreamReadInput(
-                max, buffer,        /* buffer and size */
-                Process.zargs[2],       /* timeout value   */
-                Process.zargs[3],       /* timeout routine */
-                true,               /* enable hot keys */
-                Main.h_version == ZMachine.V6); /* no script in V6 */
-
-            if (key == CharCodes.ZC_BAD)
-                return;
-
-            /* Perform save_undo for V1 to V4 games */
-
-            if (Main.h_version <= ZMachine.V4)
-                FastMem.SaveUndo();
-
-            /* Copy local buffer back to dynamic memory */
-
-            for (i = 0; buffer[i] != 0; i++)
-            {
-                if (key == CharCodes.ZC_RETURN)
-                {
-                    buffer[i] = Text.UnicodeToLower(buffer[i]);
-                }
-
-                FastMem.StoreB((zword)(Process.zargs[0] + ((Main.h_version <= ZMachine.V4) ? 1 : 2) + i), Text.TranslateToZscii(buffer[i]));
-
-            }
-
-            /* Add null character (V1-V4) or write input length into 2nd byte */
-
-            if (Main.h_version <= ZMachine.V4)
-                FastMem.StoreB((zword)(Process.zargs[0] + 1 + i), 0);
-            else
-                FastMem.StoreB((zword)(Process.zargs[0] + 1), (byte)i);
-
-            /* Tokenise line if a token buffer is present */
-
-            if (key == CharCodes.ZC_RETURN && Process.zargs[1] != 0)
-                Text.TokeniseLine(Process.zargs[0], Process.zargs[1], 0, false);
-
-            /* Store key */
-
-            if (Main.h_version >= ZMachine.V5)
-                Process.Store(Text.TranslateToZscii(key));
         }/* z_read */
 
         /*
@@ -355,13 +215,7 @@ namespace Frotz.Generic
                and which buttons are down */
 
             zword btn = OS.ReadMouse();
-            Main.hx_mouse_y = Main.MouseY;
-            Main.hx_mouse_x = Main.MouseX;
 
-            FastMem.StoreW((zword)(Process.zargs[0] + 0), Main.hx_mouse_y);
-            FastMem.StoreW((zword)(Process.zargs[0] + 2), Main.hx_mouse_x);
-            FastMem.StoreW((zword)(Process.zargs[0] + 4), btn);     /* mouse button bits */
-            FastMem.StoreW((zword)(Process.zargs[0] + 6), Main.menu_selected);  /* menu selection */
 
         }/* z_read_mouse */
     }

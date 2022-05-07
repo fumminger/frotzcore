@@ -55,34 +55,7 @@ namespace Frotz.Generic
 
         internal static void ScriptOpen()
         {
-            unchecked { Main.h_flags &= (zword)~ZMachine.SCRIPTING_FLAG; }
-
-            if (Main.h_version >= ZMachine.V5 || !ScriptValid)
-            {
-                if (!OS.ReadFileName(out string? new_name, General.DEFAULT_SCRIPT_NAME, FileTypes.FILE_SCRIPT))
-                    goto done;
-
-                ScriptName = new_name;
-            }
-
-            if ((Sfp = new StreamWriter(ScriptName, true)) != null)
-            {
-                Main.h_flags |= ZMachine.SCRIPTING_FLAG;
-
-                ScriptValid = true;
-                Main.ostream_script = true;
-
-                ScriptWidth = 0;
-
-                Sfp.AutoFlush = true;
-            }
-            else
-            {
-            }
-
-        done:
-
-            FastMem.SetWord(ZMachine.H_FLAGS, Main.h_flags);
+          
         }/* script_open */
 
         /*
@@ -94,11 +67,6 @@ namespace Frotz.Generic
 
         internal static void ScriptClose()
         {
-            unchecked { Main.h_flags &= (ushort)~ZMachine.SCRIPTING_FLAG; }
-            FastMem.SetWord(ZMachine.H_FLAGS, Main.h_flags);
-
-            Sfp?.Close();
-            Main.ostream_script = false;
         }/* script_close */
 
         /*
@@ -156,43 +124,6 @@ namespace Frotz.Generic
 
         internal static void ScriptWord(ReadOnlySpan<zword> s)
         {
-            int width;
-            int i;
-
-            int pos = 0;
-
-            if (s[pos] == CharCodes.ZC_INDENT && ScriptWidth != 0)
-            {
-                ScriptChar(s[pos++]);
-            }
-
-            for (i = pos, width = 0; i < s.Length && s[i] != 0; i++)
-            {
-                if (s[i] is CharCodes.ZC_NEW_STYLE or CharCodes.ZC_NEW_FONT)
-                    i++;
-                else if (s[i] == CharCodes.ZC_GAP)
-                    width += 3;
-                else if (s[i] == CharCodes.ZC_INDENT)
-                    width += 2;
-                else
-                    width += 1;
-            }
-
-            if (Main.option_script_cols != 0 && ScriptWidth + width > Main.option_script_cols)
-            {
-                if (s[pos] is ' ' or CharCodes.ZC_INDENT or CharCodes.ZC_GAP)
-                    pos++;
-
-                ScriptNewLine();
-            }
-
-            for (i = pos; i < s.Length && s[i] != 0; i++)
-            {
-                if (s[i] is CharCodes.ZC_NEW_FONT or CharCodes.ZC_NEW_STYLE)
-                    i++;
-                else
-                    ScriptChar(s[i]);
-            }
         }/* script_word */
 
         /*
@@ -204,21 +135,6 @@ namespace Frotz.Generic
 
         internal static void ScriptWriteInput(ReadOnlySpan<zword> buf, zword key)
         {
-            int width;
-            int i;
-
-            for (i = 0, width = 0; buf[i] != 0; i++)
-                width++;
-
-            if (Main.option_script_cols != 0 && ScriptWidth + width > Main.option_script_cols)
-                ScriptNewLine();
-
-            for (i = 0; buf[i] != 0; i++)
-                ScriptChar(buf[i]);
-
-            if (key == CharCodes.ZC_RETURN)
-                ScriptNewLine();
-
         }/* script_write_input */
 
         /*
@@ -283,7 +199,7 @@ namespace Frotz.Generic
 
                 if ((Rfp = new System.IO.StreamWriter(CommandName, false)) != null)
                 {
-                    Main.ostream_record = true;
+
                     Rfp.AutoFlush = true;
                 }
                 else
@@ -303,8 +219,6 @@ namespace Frotz.Generic
         internal static void RecordClose()
         {
 
-            Rfp?.Close();
-            Main.ostream_record = false;
 
         }/* record_close */
 
@@ -350,24 +264,6 @@ namespace Frotz.Generic
 
         private static void RecordChar(zword c)
         {
-
-            if (c != CharCodes.ZC_RETURN)
-            {
-                if (c is < CharCodes.ZC_HKEY_MIN or > CharCodes.ZC_HKEY_MAX)
-                {
-                    RecordCode(Text.TranslateToZscii(c), false);
-
-                    if (c is CharCodes.ZC_SINGLE_CLICK or CharCodes.ZC_DOUBLE_CLICK)
-                    {
-                        RecordCode(Main.MouseX, true);
-                        RecordCode(Main.MouseY, true);
-                    }
-                }
-                else
-                {
-                    RecordCode(1000 + c - CharCodes.ZC_HKEY_MIN, true);
-                }
-            }
 
         }/* record_char */
 
@@ -421,21 +317,7 @@ namespace Frotz.Generic
         internal static void ReplayOpen()
         {
 
-            if (OS.ReadFileName(out string? new_name, CommandName, FileTypes.FILE_PLAYBACK))
-            {
-                CommandName = new_name;
 
-                if ((Pfp = new FileStream(new_name, FileMode.Open)) != null)
-                {
-                    Screen.SetMorePrompts(Input.ReadYesOrNo("Do you want MORE prompts"));
-
-                    Main.istream_replay = true;
-                }
-                else
-                {
-                    Text.PrintString("Cannot open file\n");
-                }
-            }
 
 
         }/* replay_open */
@@ -453,7 +335,6 @@ namespace Frotz.Generic
 
             Pfp?.Close();
 
-            Main.istream_replay = false;
 
         }/* replay_close */
 
@@ -507,11 +388,7 @@ namespace Frotz.Generic
                     {
                         c = Text.TranslateFromZscii((byte)c);
 
-                        if (c is CharCodes.ZC_SINGLE_CLICK or CharCodes.ZC_DOUBLE_CLICK)
-                        {
-                            Main.MouseX = (zword)ReplayCode();
-                            Main.MouseY = (zword)ReplayCode();
-                        }
+
 
                         return (zword)c;
                     }
