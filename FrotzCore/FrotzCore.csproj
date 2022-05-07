@@ -17,7 +17,6 @@
   <ItemGroup>
     <Compile Remove="Frotz\Generic\fastmem.cs" />
     <Compile Remove="Frotz\Generic\files.cs" />
-    <Compile Remove="Frotz\Generic\hotkey.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="FrotzCoreConsole.deps.json" />
