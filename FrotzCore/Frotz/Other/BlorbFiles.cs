@@ -1,4 +1,4 @@
-﻿using Collections.Pooled;
+﻿
 using Frotz.Screen;
 using System;
 using System.Buffers;
@@ -276,8 +276,7 @@ namespace Frotz.Blorb
         internal static Blorb ReadBlorbFile(Stream stream)
         {
             Blorb blorb = new();
-            using PooledDictionary<int, Chunk> chunks = new();
-            //_resources.Clear();
+            Dictionary<int, Chunk> chunks = new();
 
             Span<char> chars = stackalloc char[4];
 
