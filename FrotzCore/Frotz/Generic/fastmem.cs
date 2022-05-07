@@ -452,8 +452,6 @@ namespace Frotz.Generic
 
                 if (Main.h_version <= ZMachine.V4)
                 {
-                    Process.op0_opcodes[0x09] = Variable.ZPop;
-                    Process.op0_opcodes[0x0f] = Math.ZNot;
                 }
                 else
                 {
@@ -604,8 +602,6 @@ namespace Frotz.Generic
             Buffer.FlushBuffer();
 
             OS.RestartGame(ZMachine.RESTART_BEGIN);
-
-            Random.SeedRandom(0);
 
             if (!FirstRestart)
             {
@@ -760,7 +756,7 @@ namespace Frotz.Generic
 
                     if (Main.option_save_quetzal == true)
                     {
-                        success = Quetzal.RestoreQuetzal(gfp, StoryFp);
+
                     }
                     else
                     {
@@ -1064,7 +1060,6 @@ namespace Frotz.Generic
                 {
                     if (Main.option_save_quetzal == true)
                     {
-                        success = Quetzal.SaveQuetzal(gfp, StoryFp);
 
                     }
                     else

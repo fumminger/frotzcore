@@ -784,24 +784,6 @@ namespace Frotz.Generic
 
         internal static void PrintObject(zword object_var)
         {
-            zword addr = CObject.ObjectName(object_var);
-            zword code = 0x94a5;
-
-            FastMem.LowByte(addr, out zbyte length);
-            addr++;
-
-            if (length != 0)
-                FastMem.LowWord(addr, out code);
-
-            if (code == 0x94a5)
-            {   /* encoded text 0x94a5 == empty string */
-                PrintString("object#"); /* supply a generic name */
-                PrintNum(object_var);       /* for anonymous objects */
-            }
-            else
-            {
-                DecodeText(StringType.LOW_STRING, addr);
-            }
         }/* print_object */
 
         /*

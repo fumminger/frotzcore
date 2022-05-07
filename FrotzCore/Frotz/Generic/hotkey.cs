@@ -136,7 +136,6 @@ namespace Frotz.Generic
             Text.PrintString("Seed random numbers\n");
 
             Text.PrintString("Enter seed value (or return to randomize): ");
-            Random.SeedRandom(Input.ReadNumber());
 
             return false;
 
@@ -259,7 +258,6 @@ namespace Frotz.Generic
                 if (aborting)
                     return false;
 
-                Text.PrintString("\nContinue input...\n");
 
             }
 

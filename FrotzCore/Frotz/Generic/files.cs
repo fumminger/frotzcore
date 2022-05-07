@@ -78,7 +78,6 @@ namespace Frotz.Generic
             }
             else
             {
-                Text.PrintString("Cannot open file\n");
             }
 
         done:

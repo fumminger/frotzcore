@@ -170,11 +170,9 @@ namespace Frotz.Generic
                         Files.ScriptClose();
                     break;
                 case 3:
-                    Redirect.MemoryOpen(Process.zargs[1], Process.zargs[2], Process.zargc >= 3);
                     break;
                 case -3:
-                    Redirect.MemoryClose();
-                    break;
+                     break;
                 case 4:
                     if (!Main.ostream_record)
                         Files.RecordOpen();
@@ -216,7 +214,7 @@ namespace Frotz.Generic
         {
             if (Main.ostream_memory && !Main.message)
             {
-                Redirect.MemoryWord(s);
+
             }
             else
             {
@@ -242,7 +240,6 @@ namespace Frotz.Generic
 
             if (Main.ostream_memory && !Main.message)
             {
-                Redirect.MemoryNewline();
             }
             else
             {
@@ -325,8 +322,6 @@ namespace Frotz.Generic
 
                 if (Main.h_version == ZMachine.V4 && key == CharCodes.ZC_HKEY_UNDO)
                     goto continue_input;
-                if (!Hotkey.HandleHotkey(key))
-                    goto continue_input;
 
             }
 
@@ -397,8 +392,6 @@ namespace Frotz.Generic
 
             if (hot_keys && key is >= CharCodes.ZC_HKEY_MIN and <= CharCodes.ZC_HKEY_MAX)
             {
-                if (!Hotkey.HandleHotkey(key))
-                    goto continue_input;
 
                 return CharCodes.ZC_BAD;
             }

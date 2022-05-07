@@ -56,53 +56,20 @@ namespace Frotz.Generic
             new(Main.ZPiracy)
         };
 
-        internal static readonly ZInstruction[] op1_opcodes = new ZInstruction[0x10]
+        internal static readonly ZInstruction[] op1_opcodes = new ZInstruction[]
         {
-            new(Math.ZJz),
-            new(CObject.ZGetSibling),
-            new(CObject.ZGetChild),
-            new(CObject.ZGetParent),
-            new(CObject.ZGetPropLen),
-            new(Variable.ZInc),
-            new(Variable.ZDec),
             new(Text.ZPrintAddr),
             new(ZCallS),
-            new(CObject.ZRemoveObj),
             new(Text.ZPrintObj),
             new(ZRet),
             new(ZJump),
             new(Text.ZPrintPaddr),
-            new(Variable.ZLoad),
             new(ZCallN),
         };
 
-        internal static readonly ZInstruction[] var_opcodes = new ZInstruction[0x40]
+        internal static readonly ZInstruction[] var_opcodes = new ZInstruction[]
         {
             new(__illegal__),
-            new(Math.ZJe),
-            new(Math.ZJl),
-            new(Math.ZJg),
-            new(Variable.ZDecChk),
-            new(Variable.ZIncChk),
-            new(CObject.ZJin),
-            new(Math.ZTest),
-            new(Math.ZOr),
-            new(Math.ZAnd),
-            new(CObject.ZTestAttr),
-            new(CObject.ZSetAttr),
-            new(CObject.ZClearAttr),
-            new(Variable.ZStore),
-            new(CObject.ZInsertObj),
-            new(Table.ZLoadW),
-            new(Table.ZLoadB),
-            new(CObject.ZGetProp),
-            new(CObject.ZGetPropAddr),
-            new(CObject.ZGetNextProp),
-            new(Math.ZAdd),
-            new(Math.ZSub),
-            new(Math.ZMul),
-            new(Math.ZDiv),
-            new(Math.ZMod),
             new(ZCallS),
             new(ZCallN),
             new(Screen.ZSetColor),
@@ -111,15 +78,9 @@ namespace Frotz.Generic
             new(__illegal__),
             new(__illegal__),
             new(ZCallS),
-            new(Table.ZStoreW),
-            new(Table.ZStoreB),
-            new(CObject.ZPutProp),
             new(Input.ZRead),
             new(Text.ZPrintChar),
             new(Text.ZPrintNum),
-            new(Random.ZRandom),
-            new(Variable.ZPush),
-            new(Variable.ZPull),
             new(Screen.ZSplitWindow),
             new(Screen.ZSetWindow),
             new(ZCallS),
@@ -131,25 +92,19 @@ namespace Frotz.Generic
             new(Screen.ZBufferMode),
             new(Stream.ZOutputStream),
             new(Stream.ZIputStream),
-            new(Sound.ZSoundEffect),
             new(Input.ZReadChar),
-            new(Table.ZScanTable),
-            new(Math.ZNot),
             new(ZCallN),
             new(ZCallN),
             new(Text.ZTokenise),
             new(Text.ZEncodeText),
-            new(Table.ZCopyTable),
             new(Screen.ZPrintTable),
             new(ZCheckArgCount),
         };
 
-        internal static readonly ZInstruction[] ext_opcodes = new ZInstruction[0x1e]
+        internal static readonly ZInstruction[] ext_opcodes = new ZInstruction[]
         {
             new(FastMem.ZSave),
             new(FastMem.ZRestore),
-            new(Math.ZLogShift),
-            new(Math.ZArtShift), // TODO Not tested
             new(Screen.ZSetFont),
             new(Screen.ZDrawPicture),
             new(Screen.ZPictureData),
@@ -167,10 +122,8 @@ namespace Frotz.Generic
             new(Screen.ZWindowStyle),
             new(Screen.ZGetWindProp),
             new(Screen.ZScrollWindow), // 20
-            new(Variable.ZPopStack),
             new(Input.ZReadMouse),//    z_read_mouse,
             new(Screen.ZMouseWindow),
-            new(Variable.ZPushStack),
             new(Screen.ZPutWindProp),
             new(Text.ZPrintForm),//    z_print_form,
             new(Input.ZMakeMenu),//    z_make_menu,
