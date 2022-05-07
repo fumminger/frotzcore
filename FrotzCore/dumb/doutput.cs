@@ -1,5 +1,5 @@
 ﻿using Frotz.Constants;
-
+using Frotz.Generic;
 using Frotz.Other;
 using static Frotz.Constants.CharCodes;
 using static Frotz.Constants.ZFont;
@@ -240,18 +240,41 @@ namespace Frotz
 
         static ref cell_t dumb_row(int r, int c)
         {
-            return ref screen_data[0];
+            // WARNING : Do not check bounds
+            return ref screen_data[r * Main.h_screen_cols + c];
         }
 
 
         /* Print a row to stdout.  */
         private static void show_row(int r)
         {
+            if (r == -1)
+            {
+                show_line_prefix(-1, '.');
+            }
+            else
+            {
+                int c, last;
+                show_line_prefix(r, (r == cursor_row) ? ']' : ' ');
+                /* Don't print spaces at end of line.  */
+                /* (Saves bandwidth and printhead wear.)  */
+                /* TODO: compress spaces to tabs.  */
+                for (last = Main.h_screen_cols - 1; last >= 0; last--)
+                {
+                    if (!will_print_blank(dumb_row(r, last)))
+                        break;
+                }
+
+                for (c = 0; c <= last; c++)
+                    show_cell(dumb_row(r, c));
+            }
+            show_cell(make_cell(0, DEFAULT_DUMB_COLOUR, DEFAULT_DUMB_COLOUR, '\n'));
         }
 
         static ref byte dumb_changes_row(int r, int c)
         {
-            return ref screen_changes[0];
+            // WARNING : Do not check bounds
+            return ref screen_changes[r * Main.h_screen_cols + c];
         }
 
         static void dumb_set_cell(int row, int col, cell_t c)
@@ -274,6 +297,17 @@ namespace Frotz
         }
         public static void dumb_display_char(zword c)
         {
+            dumb_set_cell(cursor_row, cursor_col, make_cell(current_style, current_fg, current_bg, c));
+            if (++cursor_col == Main.h_screen_cols)
+            {
+                if (cursor_row == Main.h_screen_rows - 1)
+                    cursor_col--;
+                else
+                {
+                    cursor_row++;
+                    cursor_col = 0;
+                }
+            }
         }
 
         static void mark_all_unchanged()
@@ -298,6 +332,101 @@ namespace Frotz
 
         private static void dumb_init_output()
         {
+            /*
+       #ifndef DISABLE_FORMATS
+                    if (f_setup.format == FORMAT_IRC)
+                    {
+                        // WARNING : No C# equivalent?
+                        //setvbuf(stdout, 0, _IONBF, 0);
+                        //setvbuf(stderr, 0, _IONBF, 0);
+
+                        Main.h_config |= CONFIG_COLOUR | CONFIG_BOLDFACE | CONFIG_EMPHASIS;
+
+                        Array.Fill<byte>(frotz_to_dumb, DEFAULT_DUMB_COLOUR, 0, 256);
+                        frotz_to_dumb[BLACK_COLOUR] = 1;
+                        frotz_to_dumb[RED_COLOUR] = 4;
+                        frotz_to_dumb[GREEN_COLOUR] = 3;
+                        frotz_to_dumb[YELLOW_COLOUR] = 8;
+                        frotz_to_dumb[BLUE_COLOUR] = 12;
+                        frotz_to_dumb[MAGENTA_COLOUR] = 6;
+                        frotz_to_dumb[CYAN_COLOUR] = 11;
+                        frotz_to_dumb[WHITE_COLOUR] = 0;
+                        frotz_to_dumb[GREY_COLOUR] = 14;
+
+                        Main.h_default_foreground = WHITE_COLOUR;
+                        Main.h_default_background = BLACK_COLOUR;
+                    }
+                    else if (f_setup.format == FORMAT_ANSI)
+            {
+                // WARNING : No C# equivalent?
+                //setvbuf(stdout, 0, _IONBF, 0);
+                //setvbuf(stderr, 0, _IONBF, 0);
+
+                Main.h_config |= CONFIG_COLOUR | CONFIG_BOLDFACE | CONFIG_EMPHASIS;
+
+                Array.Fill<byte>(frotz_to_dumb, DEFAULT_DUMB_COLOUR, 0, 256);
+                frotz_to_dumb[BLACK_COLOUR] = 0;
+                frotz_to_dumb[RED_COLOUR] = 1;
+                frotz_to_dumb[GREEN_COLOUR] = 2;
+                frotz_to_dumb[YELLOW_COLOUR] = 3;
+                frotz_to_dumb[BLUE_COLOUR] = 4;
+                frotz_to_dumb[MAGENTA_COLOUR] = 5;
+                frotz_to_dumb[CYAN_COLOUR] = 6;
+                frotz_to_dumb[WHITE_COLOUR] = 7;
+                frotz_to_dumb[LIGHTGREY_COLOUR] = 17;
+                frotz_to_dumb[MEDIUMGREY_COLOUR] = 13;
+                frotz_to_dumb[DARKGREY_COLOUR] = 8;
+
+                Main.h_default_foreground = WHITE_COLOUR;
+                Main.h_default_background = BLACK_COLOUR;
+            }
+            /*
+            else if (f_setup.format == FORMAT_BBCODE)
+            {
+                // WARNING : No C# equivalent?
+                //setvbuf(stdout, 0, _IONBF, 0);
+                //setvbuf(stderr, 0, _IONBF, 0);
+
+                Main.h_config |= CONFIG_COLOUR | CONFIG_BOLDFACE | CONFIG_EMPHASIS;
+
+                Array.Fill<byte>(frotz_to_dumb, DEFAULT_DUMB_COLOUR, 0, 256);
+                frotz_to_dumb[BLACK_COLOUR] = 0;
+                frotz_to_dumb[RED_COLOUR] = 1;
+                frotz_to_dumb[GREEN_COLOUR] = 2;
+                frotz_to_dumb[YELLOW_COLOUR] = 3;
+                frotz_to_dumb[BLUE_COLOUR] = 4;
+                frotz_to_dumb[MAGENTA_COLOUR] = 5;
+                frotz_to_dumb[CYAN_COLOUR] = 6;
+                frotz_to_dumb[WHITE_COLOUR] = 7;
+                frotz_to_dumb[LIGHTGREY_COLOUR] = 8;
+                frotz_to_dumb[MEDIUMGREY_COLOUR] = 9;
+                frotz_to_dumb[DARKGREY_COLOUR] = 10;
+
+                Main.h_default_foreground = BLACK_COLOUR;
+                Main.h_default_background = WHITE_COLOUR;
+            }
+            */
+            if (Main.h_version == V3)
+            {
+                Main.h_config |= CONFIG_SPLITSCREEN;
+                Main.h_flags &= (ushort)(~OLD_SOUND_FLAG & 0xffff);
+            }
+
+            if (Main.h_version >= V5)
+            {
+                Main.h_flags &= (ushort)(~SOUND_FLAG & 0xffff);
+            }
+
+            Main.h_screen_height = Main.h_screen_rows;
+            Main.h_screen_width = Main.h_screen_cols;
+            screen_cells = Main.h_screen_rows * Main.h_screen_cols;
+
+            Main.h_font_width = 1; Main.h_font_height = 1;
+
+            screen_data = new cell_t[screen_cells];
+            screen_changes = new byte[screen_cells];
+            EraseArea(1, 1, Main.h_screen_rows, Main.h_screen_cols, -2);
+            Array.Fill<byte>(screen_changes, 0, 0, screen_cells);
         }
 
         private static void dumb_display_user_input(zword[] s)
@@ -345,11 +474,87 @@ namespace Frotz
          */
         private static void dumb_show_screen(bool show_cursor)
         {
+            int r, c, first, last;
+            bool[] changed_rows = new bool[0x100];
+
+            /* Easy case */
+            if (compression_mode == compression_mode_type.COMPRESSION_NONE)
+            {
+                for (r = hide_lines; r < Main.h_screen_rows; r++)
+                    show_row(r);
+                mark_all_unchanged();
+                return;
+            }
+
+            /* Check which rows changed, and where the first and last change is. */
+            first = last = -1;
+            Array.Fill<bool>(changed_rows, false, 0, Main.h_screen_rows);
+            for (r = hide_lines; r < Main.h_screen_rows; r++)
+            {
+                for (c = 0; c < Main.h_screen_cols; c++)
+                {
+                    if (dumb_changes_row(r, c) != 0 && !is_blank(dumb_row(r, c)))
+                        break;
+                }
+
+                changed_rows[r] = (c != Main.h_screen_cols);
+                if (changed_rows[r])
+                {
+                    first = (first != -1) ? first : r;
+                    last = r;
+                }
+            }
+
+            if (first == -1)
+                return;
+
+            /* The show_cursor rule described above */
+            if (show_cursor && (cursor_row == last))
+            {
+                for (c = cursor_col; c < Main.h_screen_cols; c++)
+                {
+                    if (!is_blank(dumb_row(last, c)))
+                        break;
+                }
+                if (c == Main.h_screen_cols)
+                    last--;
+            }
+
+            /* Display the appropriate rows.  */
+            if (compression_mode == compression_mode_type.COMPRESSION_MAX)
+            {
+                for (r = first; r <= last; r++)
+                {
+                    if (changed_rows[r])
+                        show_row(r);
+                }
+            }
+            else
+            {
+                /* COMPRESSION_SPANS */
+                for (r = first; r <= last; r++)
+                {
+                    if (changed_rows[r] || changed_rows[r + 1])
+                        show_row(r);
+                    else
+                    {
+                        while (!changed_rows[r + 1])
+                            r++;
+                        show_row(-1);
+                    }
+                }
+                if (show_cursor && (cursor_row > last + 1))
+                    show_row((cursor_row == last + 2) ? (last + 1) : -1);
+            }
+            mark_all_unchanged();
         }
 
         /* Unconditionally show whole screen.  For \s user command.  */
         private static void dumb_dump_screen()
         {
+            int r;
+            for (r = 0; r < Main.h_screen_height; r++)
+                show_row(r);
         }
 
         /* Called when it's time for a more prompt but user has them turned off.  */
@@ -841,6 +1046,9 @@ namespace Frotz
          */
         public static void SetCursor(int row, int col)
         {
+            cursor_row = row - 1; cursor_col = col - 1;
+            if (cursor_row >= Main.h_screen_rows)
+                cursor_row = Main.h_screen_rows - 1;
         }
 
         /*

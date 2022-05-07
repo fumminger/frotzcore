@@ -218,6 +218,8 @@ namespace Frotz.Generic
                         for (i = ZMachine.H_SERIAL; i < ZMachine.H_SERIAL + 6; ++i)
                         {
                             if ((x = svf.ReadByte()) == -1) return fatal;
+                            if (x != FastMem.ZMData[FastMem.Zmp + i])
+                                progress = GOT_ERROR;
                         }
 
                         if (!TryReadWord(svf, out tmpw)) return fatal;
@@ -236,6 +238,7 @@ namespace Frotz.Generic
                         if ((x = svf.ReadByte()) == -1) return fatal;
                         pc |= (zlong)x;
                         fatal = zword.MaxValue; /* Setting PC means errors must be fatal. */ // TODO make sure this works
+                        FastMem.SetPc(pc);
 
                         for (i = 13; i < currlen; ++i)
                             svf.ReadByte(); /* Skip rest of chunk. */
@@ -310,7 +313,11 @@ namespace Frotz.Generic
                                 tmpl >>= 8; /* Shift to get PC value. */
                                 --tmpl;     /* Point at result byte. */
                                 /* Sanity check on result variable... */
-
+                                if (FastMem.ZMData[FastMem.Zmp + tmpl] != (zbyte)x)
+                                {
+                                    Text.PrintString("Save-file has wrong variable number on stack (possibly wrong game version?)\n");
+                                    return fatal;
+                                }
                             }
 
                             Main.Stack[--Main.sp] = (zword)(tmpl >> 9); /* High part of PC */
@@ -379,13 +386,15 @@ namespace Frotz.Generic
                                     if ((x = svf.ReadByte()) == -1) return fatal;
                                     for (; x >= 0 && i < Main.h_dynamic_size; --x, ++i)
                                     {
-
+                                        if ((y = stf.ReadByte()) == -1) return fatal;
+                                        else
+                                            FastMem.ZMData[FastMem.Zmp + i] = (zbyte)y;
                                     }
                                 }
                                 else    /* Not a run. */
                                 {
                                     if ((y = stf.ReadByte()) == -1) return fatal;
-
+                                    FastMem.ZMData[FastMem.Zmp + i] = (zbyte)(x ^ y);
                                     ++i;
                                 }
                                 /* Make sure we don't load too much. */
@@ -400,6 +409,9 @@ namespace Frotz.Generic
                             /* If chunk is short, assume a run. */
                             for (; i < Main.h_dynamic_size; ++i)
                             {
+                                if ((y = stf.ReadByte()) == -1) return fatal;
+                                else
+                                    FastMem.ZMData[FastMem.Zmp + i] = (zbyte)y;
                             }
 
                             if (currlen == 0)
@@ -415,7 +427,14 @@ namespace Frotz.Generic
                             /* Must be exactly the right size. */
                             if (currlen == Main.h_dynamic_size)
                             {
-
+                                int read = svf.Read(FastMem.ZMData, (int)FastMem.Zmp, (int)currlen);
+                                if (read == currlen)
+                                {
+                                    progress |= GOT_MEMORY; /* Only on success. */
+                                    break;
+                                }
+                                //if (fread(zmp, currlen, 1, svf) == 1) {
+                                //}
                             }
                             else
                             {
@@ -467,12 +486,13 @@ namespace Frotz.Generic
             if (!WriteLong(svf, ID_IFZS)) return 0;
 
             /* Write `IFhd' chunk. */
-
+            FastMem.GetPc(out long pc);
             if (!WriteChunk(svf, ID_IFhd, 13)) return 0;
             if (!WriteWord(svf, Main.h_release)) return 0;
-
+            for (i = ZMachine.H_SERIAL; i < ZMachine.H_SERIAL + 6; ++i)
+                if (!WriteByte(svf, FastMem.ZMData[FastMem.Zmp + i])) return 0;
             if (!WriteWord(svf, Main.h_checksum)) return 0;
-
+            if (!WriteLong(svf, pc << 8)) /* Includes pad. */	return 0;
 
             /* Write `CMem' chunk. */
             if ((cmempos = svf.Position) < 0) return 0;
@@ -484,7 +504,7 @@ namespace Frotz.Generic
             for (i = 0, j = 0, cmemlen = 0; i < Main.h_dynamic_size; ++i)
             {
                 if ((c = stf.ReadByte()) == -1) return 0;
-
+                c ^= FastMem.ZMData[i];
                 if (c == 0)
                 {
                     ++j;    /* It's a run of equal bytes. */
@@ -553,11 +573,18 @@ namespace Frotz.Generic
                 nvars = (Main.Stack[p] & 0x0F00) >> 8;
                 nargs = Main.Stack[p] & 0x00FF;
                 nstk = (zword)(frames[i] - frames[i - 1] - nvars - 4);
+                pc = ((zlong)Main.Stack[p + 3] << 9) | Main.Stack[p + 2];
 
                 switch (Main.Stack[p] & 0xF000) /* Check type of call. */
                 {
-
-
+                    case 0x0000:    /* Function. */
+                        var = FastMem.ZMData[FastMem.Zmp + pc];
+                        pc = ((pc + 1) << 8) | (zlong)nvars;
+                        break;
+                    case 0x1000:    /* Procedure. */
+                        var = 0;
+                        pc = (pc << 8) | 0x10 | (zlong)nvars;   /* Set procedure flag. */
+                        break;
                     /* case 0x2000: */
                     default:
                         Err.RuntimeError(ErrorCodes.ERR_SAVE_IN_INTER);
@@ -566,6 +593,14 @@ namespace Frotz.Generic
                 if (nargs != 0)
                     nargs = (zword)((1 << nargs) - 1);  /* Make args into bitmap. */
 
+                /* Write the main part of the frame... */
+                if (!WriteLong(svf, pc) ||
+                    !WriteByte(svf, var) ||
+                    !WriteByte(svf, (byte)nargs) ||
+                    !WriteWord(svf, nstk))
+                {
+                    return 0;
+                }
 
                 /* Write the variables and eval stack. */
                 for (j = 0, --p; j < nvars + nstk; ++j, --p)

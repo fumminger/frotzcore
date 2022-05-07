@@ -94,7 +94,45 @@ namespace Frotz.Generic
 
         internal static void RuntimeError(int errnum)
         {
-  
+            bool wasfirst;
+
+            if (errnum is <= 0 or > ErrorCodes.ERR_NUM_ERRORS)
+                return;
+
+            if (ErrorReportMode == ErrorCodes.ERR_REPORT_FATAL
+            || (Main.option_ignore_errors == false && errnum <= ErrorCodes.ERR_MAX_FATAL))
+            {
+                Buffer.FlushBuffer();
+                OS.Fatal(err_messages[errnum - 1]);
+                return;
+            }
+
+            wasfirst = (error_count[errnum - 1] == 0);
+            error_count[errnum - 1]++;
+
+            if ((ErrorReportMode == ErrorCodes.ERR_REPORT_ALWAYS)
+            || (ErrorReportMode == ErrorCodes.ERR_REPORT_ONCE && wasfirst))
+            {
+
+                FastMem.GetPc(out long pc);
+                Text.PrintString("Warning: ");
+                Text.PrintString(err_messages[errnum - 1]);
+                Text.PrintString(" (PC = ");
+                PrintLong(pc, 16);
+                Buffer.PrintChar(')');
+
+                if (ErrorReportMode == ErrorCodes.ERR_REPORT_ONCE)
+                {
+                    Text.PrintString(" (will ignore further occurrences)");
+                }
+                else
+                {
+                    Text.PrintString(" (occurrence ");
+                    PrintLong(error_count[errnum - 1], 10);
+                    Buffer.PrintChar(')');
+                }
+                Buffer.NewLine();
+            }
 
         } /* report_error */
 

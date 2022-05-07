@@ -170,15 +170,29 @@ namespace Frotz.Generic
         {
             if (OS.ProcessArguments(args))
             {
+                Buffer.InitBuffer();
 
                 Err.InitErr();
 
+                FastMem.InitMemory();
 
+                Process.InitProcess();
 
+                Sound.InitSound();
+
+                Text.InitText();
 
                 OS.InitScreen();
 
+                FastMem.InitUndo();
 
+                FastMem.ZRestart();
+
+                //            OS.GameStarted(); // New function; Called to allow the screen to know info about the game
+
+                Process.Interpret();
+
+                FastMem.ResetMemory();
 
                 //OS.ResetScreen();
             }

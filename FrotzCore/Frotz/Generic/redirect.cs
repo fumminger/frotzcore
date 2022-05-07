@@ -66,6 +66,8 @@ namespace Frotz.Generic
                 if (buffering && (short)xsize <= 0)
                     xsize = Screen.GetMaxWidth((zword)(-(short)xsize));
 
+                FastMem.StoreW(table, 0);
+
                 redirect[depth] = new(xsize, table, 0, 0);
 
                 Main.ostream_memory = true;
@@ -92,8 +94,20 @@ namespace Frotz.Generic
 
             addr = redirect[depth].Table;
 
+            FastMem.LowWord(addr, out zword size);
             addr += 2;
 
+            if (redirect[depth].XSize != 0xffff)
+            {
+                redirect[depth].Table = (zword)(addr + size);
+                size = 0;
+            }
+            else
+            {
+                FastMem.StoreB((zword)(addr + (size++)), 13);
+            }
+
+            FastMem.StoreW(redirect[depth].Table, size);
         }/* memory_new_line */
 
         /*
@@ -130,7 +144,13 @@ namespace Frotz.Generic
 
             addr = redirect[depth].Table;
 
+            FastMem.LowWord(addr, out zword size);
+            addr += 2;
 
+            while ((c = s[pos++]) != 0)
+                FastMem.StoreB((zword)(addr + (size++)), Text.TranslateToZscii(c));
+
+            FastMem.StoreW(redirect[depth].Table, size);
 
         }/* memory_word */
 
@@ -153,6 +173,7 @@ namespace Frotz.Generic
                     Main.h_line_width = (redirect[depth].XSize != 0xffff) ?
                     redirect[depth].Total : redirect[depth].Width;
 
+                    FastMem.SetWord(ZMachine.H_LINE_WIDTH, Main.h_line_width);
                 }
 
                 if (depth == 0)

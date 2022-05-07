@@ -86,6 +86,8 @@ namespace Frotz.Generic
         {
             Text.PrintString("Playback on\n");
 
+            if (!Main.istream_replay)
+                Files.ReplayOpen();
 
             return false;
 
@@ -101,7 +103,21 @@ namespace Frotz.Generic
         internal static bool HotkeyRecording()
         {
 
-
+            if (Main.istream_replay)
+            {
+                Text.PrintString("Playback off\n");
+                Files.ReplayClose();
+            }
+            else if (Main.ostream_record)
+            {
+                Text.PrintString("Recording off\n");
+                Files.RecordClose();
+            }
+            else
+            {
+                Text.PrintString("Recording on\n");
+                Files.RecordOpen();
+            }
 
             return false;
 
@@ -120,6 +136,7 @@ namespace Frotz.Generic
             Text.PrintString("Seed random numbers\n");
 
             Text.PrintString("Enter seed value (or return to randomize): ");
+            Random.SeedRandom(Input.ReadNumber());
 
             return false;
 
@@ -136,7 +153,26 @@ namespace Frotz.Generic
         {
             Text.PrintString("Undo one turn\n");
 
+            if (FastMem.RestoreUndo() > 0)
+            {
 
+                if (Main.h_version >= ZMachine.V5)
+                {       /* for V5+ games we must */
+                    Process.Store(2);           /* store 2 (for success) */
+                    return true;        /* and abort the input   */
+                }
+
+                if (Main.h_version <= ZMachine.V3)
+                {       /* for V3- games we must */
+                    Screen.ZShowStatus();       /* draw the status line  */
+                    return false;       /* and continue input    */
+                }
+
+            }
+            else
+            {
+                Text.PrintString("No more undo information available.\n");
+            }
 
             return false;
 
@@ -154,8 +190,17 @@ namespace Frotz.Generic
 
             Text.PrintString("New game\n");
 
-            return false;
-  
+            if (Input.ReadYesOrNo("Do you wish to restart"))
+            {
+
+                FastMem.ZRestart();
+                return true;
+
+            }
+            else
+            {
+                return false;
+            }
         }/* hot_key_restart */
 
         /*
@@ -214,6 +259,7 @@ namespace Frotz.Generic
                 if (aborting)
                     return false;
 
+                Text.PrintString("\nContinue input...\n");
 
             }
 
