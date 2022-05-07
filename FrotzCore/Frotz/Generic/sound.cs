@@ -173,8 +173,6 @@ namespace Frotz.Generic
                         OS.PrepareSample(number);
                         break;
                     case EFFECT_PLAY:
-                        StartSample(number, FastMem.Lo(volume), FastMem.Hi(volume),
-                            (zword)((Process.zargc == 4) ? Process.zargs[3] : 0));
                         break;
                     case EFFECT_STOP:
                         OS.StopSample(number);

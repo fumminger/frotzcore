@@ -22,10 +22,6 @@
     <Compile Remove="Frotz\Generic\hotkey.cs" />
     <Compile Remove="Frotz\Generic\math.cs" />
     <Compile Remove="Frotz\Generic\object.cs" />
-    <Compile Remove="Frotz\Generic\quetzal.cs" />
-    <Compile Remove="Frotz\Generic\random.cs" />
-    <Compile Remove="Frotz\Generic\redirect.cs" />
-    <Compile Remove="Frotz\Generic\sound.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="FrotzCoreConsole.deps.json" />
