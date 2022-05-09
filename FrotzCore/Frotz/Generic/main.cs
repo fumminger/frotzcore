@@ -25,6 +25,8 @@
  *    s.jokisch@avu.de
  *
  */
+#nullable enable
+
 using Frotz.Constants;
 
 using System;
@@ -165,6 +167,11 @@ namespace Frotz.Generic
          * Prepare and run the game.
          *
          */
+        public static int TestFunc(ReadOnlySpan<string> args)
+        {
+            Console.WriteLine("The planet is named "+args[0]);
+            return 0;
+        }
 
         public static int MainFunc(ReadOnlySpan<string> args)
         {

@@ -21,6 +21,7 @@
 /*
  * New undo mechanism added by Jim Dunleavy <jim.dunleavy@erha.ie>
  */
+#nullable enable
 
 using Frotz.Constants;
 
@@ -112,7 +113,7 @@ namespace Frotz.Generic
         internal static long Zmp = 0;
         internal static long Pcp = 0;
 
-        //private static System.IO.Stream? StoryFp = null;
+        private static System.IO.Stream? StoryFp = null;
         private static bool FirstRestart = true;
         private static long InitFpPos = 0;
 
@@ -220,7 +221,7 @@ namespace Frotz.Generic
         internal static zword GetHeaderExtension(int entry)
         {
             if (Main.h_extension_table == 0 || entry > Main.hx_table_size)
-            return 0;
+                return 0;
 
             zword addr = (zword)(Main.h_extension_table + 2 * entry);
             LowWord(addr, out zword val);
@@ -311,7 +312,7 @@ namespace Frotz.Generic
             }
             SetByte(ZMachine.H_STANDARD_HIGH, Main.h_standard_high);
             SetByte(ZMachine.H_STANDARD_LOW, Main.h_standard_low);
- 
+
             SetHeaderExtension(ZMachine.HX_FLAGS, Main.hx_flags);
             SetHeaderExtension(ZMachine.HX_FORE_COLOUR, Main.hx_fore_colour);
             SetHeaderExtension(ZMachine.HX_BACK_COLOUR, Main.hx_back_colour);
@@ -334,16 +335,16 @@ namespace Frotz.Generic
             if (Main.StoryData is null || Main.StoryName is null)
                 throw new InvalidOperationException("Story not initialized.");
 
-            //StoryFp?.Dispose();
-            //StoryFp = OS.PathOpen(Main.StoryData);
-            //InitFpPos = StoryFp.Position;
+            StoryFp?.Dispose();
+            StoryFp = OS.PathOpen(Main.StoryData);
+            InitFpPos = StoryFp.Position;
 
             /* Allocate memory for story header */
 
             ZMData = new byte[64];
 
             /* Load header into memory */
-            //if (StoryFp.Read(ZMData, 0, 64) != 64)
+            if (StoryFp.Read(ZMData, 0, 64) != 64)
             {
                 OS.Fatal("Story file read error");
             }
@@ -427,8 +428,8 @@ namespace Frotz.Generic
                 }
                 else
                 {/* some old games lack the file size entry */
-                    //Main.StorySize = StoryFp.Length - InitFpPos;
-                    //StoryFp.Position = InitFpPos + 64;
+                    Main.StorySize = StoryFp.Length - InitFpPos;
+                    StoryFp.Position = InitFpPos + 64;
                 }
 
                 LowWord(ZMachine.H_CHECKSUM, out Main.h_checksum);
@@ -481,9 +482,9 @@ namespace Frotz.Generic
                     if (Main.StorySize - size < 0x8000) n = (ushort)(Main.StorySize - size);
                     SetPc(size);
 
-                    //int read = StoryFp.Read(ZMData, (int)Pcp, n);
+                    int read = StoryFp.Read(ZMData, (int)Pcp, n);
 
-                    //if (read != n) OS.Fatal("Story file read error");
+                    if (read != n) OS.Fatal("Story file read error");
                 }
 
                 // Take a moment to calculate the checksum of the story file in case verify is called
@@ -497,7 +498,7 @@ namespace Frotz.Generic
             FirstRestart = true;
 
             /* Read header extension table */
-  
+
             Main.hx_table_size = GetHeaderExtension(ZMachine.HX_TABLE_SIZE);
             Main.hx_unicode_table = GetHeaderExtension(ZMachine.HX_UNICODE_TABLE);
             Main.hx_flags = GetHeaderExtension(ZMachine.HX_FLAGS);
@@ -539,7 +540,7 @@ namespace Frotz.Generic
         /// </summary>
         internal static void ResetMemory()
         {
-            //StoryFp?.Dispose();
+            StoryFp?.Dispose();
             UndoMem.Clear();
         }
 
@@ -575,7 +576,7 @@ namespace Frotz.Generic
                 Screen.RefreshTextStyle();
 
             }
- 
+
             SetByte(addr, value);
 
         }/* storeb */
@@ -609,13 +610,13 @@ namespace Frotz.Generic
 
             if (!FirstRestart)
             {
-                //if (StoryFp is null)
+                if (StoryFp is null)
                     throw new InvalidOperationException("StoryFp not initialized.");
 
-                //StoryFp.Position = InitFpPos;
+                StoryFp.Position = InitFpPos;
 
-                //int read = StoryFp.Read(ZMData.AsSpan(0, Main.h_dynamic_size).ToArray(), 0, Main.h_dynamic_size);
-                //if (read != Main.h_dynamic_size)
+                int read = StoryFp.Read(ZMData.AsSpan(0, Main.h_dynamic_size).ToArray(), 0, Main.h_dynamic_size);
+                if (read != Main.h_dynamic_size)
                 {
                     OS.Fatal("Story file read error");
                 }
@@ -643,7 +644,7 @@ namespace Frotz.Generic
             {
                 Process.Call(Main.h_start_pc, 0, 0, 0);
             }
-  
+
             OS.RestartGame(ZMachine.RESTART_END);
 
         }/* z_restart */
@@ -750,7 +751,7 @@ namespace Frotz.Generic
 
                 SaveName = new_name;
 
-                //if (StoryFp is null)
+                if (StoryFp is null)
                     throw new InvalidOperationException("StoryFp not initialized.");
 
                 /* Open game file */
@@ -760,7 +761,7 @@ namespace Frotz.Generic
 
                     if (Main.option_save_quetzal == true)
                     {
-                        //success = Quetzal.RestoreQuetzal(gfp, StoryFp);
+                        success = Quetzal.RestoreQuetzal(gfp, StoryFp);
                     }
                     else
                     {
@@ -851,7 +852,7 @@ namespace Frotz.Generic
             }
 
         finished:
-     
+
             if (Main.h_version <= ZMachine.V3)
                 Process.Branch(success > 0);
             else
@@ -966,7 +967,7 @@ namespace Frotz.Generic
                 return -1;
 
             if (UndoMem.Count == 0)
-            return 0;
+                return 0;
 
             /* undo possible */
 
@@ -1055,7 +1056,7 @@ namespace Frotz.Generic
 
                 SaveName = new_name;
 
-                //if (StoryFp is null)
+                if (StoryFp is null)
                     throw new InvalidOperationException("StoryFp not initialized.");
 
                 /* Open game file */
@@ -1064,7 +1065,7 @@ namespace Frotz.Generic
                 {
                     if (Main.option_save_quetzal == true)
                     {
-                        //success = Quetzal.SaveQuetzal(gfp, StoryFp);
+                        success = Quetzal.SaveQuetzal(gfp, StoryFp);
 
                     }
                     else
@@ -1122,7 +1123,7 @@ namespace Frotz.Generic
             }
 
         finished:
-           
+
             if (Main.h_version <= ZMachine.V3)
                 Process.Branch(success > 0);
             else

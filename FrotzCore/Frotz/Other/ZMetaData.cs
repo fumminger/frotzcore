@@ -1,4 +1,6 @@
-﻿using System.Xml;
+﻿#nullable enable
+
+using System.Xml;
 
 namespace Frotz.Other
 {

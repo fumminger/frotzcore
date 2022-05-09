@@ -17,6 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+#nullable enable
+
 using Frotz.Constants;
 
 using System;
@@ -32,9 +34,9 @@ namespace Frotz.Generic
         internal static string ScriptName = General.DEFAULT_SCRIPT_NAME;
         internal static string CommandName = General.DEFAULT_COMMAND_NAME;
         private static int ScriptWidth = 0;
-//        private static StreamWriter? Sfp = null;
-//        private static System.IO.StreamWriter? Rfp = null;
-//        private static System.IO.FileStream? Pfp = null;
+        private static StreamWriter? Sfp = null;
+        private static System.IO.StreamWriter? Rfp = null;
+        private static System.IO.FileStream? Pfp = null;
 
         #region Script
         /*
@@ -65,18 +67,18 @@ namespace Frotz.Generic
                 ScriptName = new_name;
             }
 
-            //if ((Sfp = new StreamWriter(ScriptName, true)) != null)
-            //{
-            //    Main.h_flags |= ZMachine.SCRIPTING_FLAG;
+            if ((Sfp = new StreamWriter(ScriptName, true)) != null)
+            {
+                Main.h_flags |= ZMachine.SCRIPTING_FLAG;
 
-            //    ScriptValid = true;
-            //    Main.ostream_script = true;
+                ScriptValid = true;
+                Main.ostream_script = true;
 
-            //    ScriptWidth = 0;
+                ScriptWidth = 0;
 
-            //    Sfp.AutoFlush = true;
-            //}
-            //else
+                Sfp.AutoFlush = true;
+            }
+            else
             {
                 Text.PrintString("Cannot open file\n");
             }
@@ -98,7 +100,7 @@ namespace Frotz.Generic
             unchecked { Main.h_flags &= (ushort)~ZMachine.SCRIPTING_FLAG; }
             FastMem.SetWord(ZMachine.H_FLAGS, Main.h_flags);
 
-            //Sfp?.Close();
+            Sfp?.Close();
             Main.ostream_script = false;
         }/* script_close */
 
@@ -111,7 +113,7 @@ namespace Frotz.Generic
 
         internal static void ScriptNewLine()
         {
-            //Sfp?.WriteLine();
+            Sfp?.WriteLine();
 
             ScriptWidth = 0;
         }/* script_new_line */
@@ -144,7 +146,7 @@ namespace Frotz.Generic
                 return;
             }
 
-            //Sfp?.Write((char)c);
+            Sfp?.Write((char)c);
             ScriptWidth++;
         }/* script_char */
 
@@ -237,7 +239,7 @@ namespace Frotz.Generic
             for (i = 0, width = 0; buf[i] != 0; i++)
                 width++;
 
-            //Sfp?.BaseStream.SetLength(Sfp.BaseStream.Length - width);
+            Sfp?.BaseStream.SetLength(Sfp.BaseStream.Length - width);
             ScriptWidth -= width;
         }/* script_erase_input */
 
@@ -281,17 +283,16 @@ namespace Frotz.Generic
             if (OS.ReadFileName(out string? new_name, CommandName, FileTypes.FILE_RECORD))
             {
                 CommandName = new_name;
-                /*
+
                 if ((Rfp = new System.IO.StreamWriter(CommandName, false)) != null)
                 {
-
+                    Main.ostream_record = true;
                     Rfp.AutoFlush = true;
                 }
                 else
                 {
                     Text.PrintString("Cannot open file\n");
                 }
-                */
             }
         }/* record_open */
 
@@ -305,7 +306,7 @@ namespace Frotz.Generic
         internal static void RecordClose()
         {
 
-            //Rfp?.Close();
+            Rfp?.Close();
             Main.ostream_record = false;
 
         }/* record_close */
@@ -319,27 +320,27 @@ namespace Frotz.Generic
 
         private static void RecordCode(int c, bool force_encoding)
         {
-            //if (Rfp is null)
-            //    throw new InvalidOperationException("Rfp not initialized.");
+            if (Rfp is null)
+                throw new InvalidOperationException("Rfp not initialized.");
 
             if (force_encoding || (c is '[' or < 0x20 or > 0x7e))
             {
                 int i;
 
-                //Rfp.Write('[');
+                Rfp.Write('[');
 
                 for (i = 10000; i != 0; i /= 10)
                 {
-                    //if (c >= i || i == 1)
-                        //Rfp.Write((char)('0' + (c / i) % 10));
+                    if (c >= i || i == 1)
+                        Rfp.Write((char)('0' + (c / i) % 10));
                 }
 
-                //Rfp.Write(']');
+                Rfp.Write(']');
 
             }
             else
             {
-                //Rfp.Write((char)c);
+                Rfp.Write((char)c);
             }
         }/* record_code */
 
@@ -384,7 +385,7 @@ namespace Frotz.Generic
         {
             RecordChar(key);
 
-            //Rfp?.Write('\n');
+            Rfp?.Write('\n');
 
         }/* record_write_key */
 
@@ -406,7 +407,7 @@ namespace Frotz.Generic
 
             RecordChar(key);
 
-            //Rfp?.Write('\n');
+            Rfp?.Write('\n');
 
         }/* record_write_input */
         #endregion
@@ -427,13 +428,13 @@ namespace Frotz.Generic
             {
                 CommandName = new_name;
 
-                //if ((Pfp = new FileStream(new_name, FileMode.Open)) != null)
-                //{
-                //    Screen.SetMorePrompts(Input.ReadYesOrNo("Do you want MORE prompts"));
+                if ((Pfp = new FileStream(new_name, FileMode.Open)) != null)
+                {
+                    Screen.SetMorePrompts(Input.ReadYesOrNo("Do you want MORE prompts"));
 
-                //    Main.istream_replay = true;
-                //}
-                //else
+                    Main.istream_replay = true;
+                }
+                else
                 {
                     Text.PrintString("Cannot open file\n");
                 }
@@ -453,7 +454,7 @@ namespace Frotz.Generic
         {
             Screen.SetMorePrompts(true);
 
-//            Pfp?.Close();
+            Pfp?.Close();
 
             Main.istream_replay = false;
 
@@ -468,21 +469,21 @@ namespace Frotz.Generic
 
         private static int ReplayCode()
         {
-            //if (Pfp is null)
-            //    throw new InvalidOperationException("Pfp not initialized");
+            if (Pfp is null)
+                throw new InvalidOperationException("Pfp not initialized");
 
-            int c = 0;
+            int c;
 
-            //if ((c = Pfp.ReadByte()) == '[')
-            //{
-            //    int c2;
-            //    c = 0;
-            //    while ((c2 = Pfp.ReadByte()) is not -1 and >= '0' and <= '9')
-            //        c = 10 * c + c2 - '0';
-//
- //               return (c2 == ']') ? c : -1;
- //           }
- //           else
+            if ((c = Pfp.ReadByte()) == '[')
+            {
+                int c2;
+                c = 0;
+                while ((c2 = Pfp.ReadByte()) is not -1 and >= '0' and <= '9')
+                    c = 10 * c + c2 - '0';
+
+                return (c2 == ']') ? c : -1;
+            }
+            else
             {
                 return c;
             }
@@ -497,8 +498,8 @@ namespace Frotz.Generic
 
         private static zword ReplayChar()
         {
-//            if (Pfp is null)
-//                throw new InvalidOperationException("Pfp not initialized.");
+            if (Pfp is null)
+                throw new InvalidOperationException("Pfp not initialized.");
 
             int c;
             if ((c = ReplayCode()) != -1)
@@ -523,8 +524,8 @@ namespace Frotz.Generic
                     }
                 }
 
-//                Pfp.Position--;
-//                Pfp.WriteByte((byte)'\n');
+                Pfp.Position--;
+                Pfp.WriteByte((byte)'\n');
 
                 return CharCodes.ZC_RETURN;
             }
@@ -545,14 +546,14 @@ namespace Frotz.Generic
         {
             zword key = ReplayChar();
 
-//            if (Pfp?.ReadByte() != '\n')
+            if (Pfp?.ReadByte() != '\n')
             {
 
                 ReplayClose();
                 return CharCodes.ZC_BAD;
 
             }
-//            else
+            else
             {
                 return key;
             }

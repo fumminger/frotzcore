@@ -1,4 +1,6 @@
-﻿using Frotz.Constants;
+﻿#nullable enable
+
+using Frotz.Constants;
 
 namespace Frotz.Generic
 {
