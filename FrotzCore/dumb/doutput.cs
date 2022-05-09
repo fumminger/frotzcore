@@ -1,4 +1,6 @@
-﻿using Frotz.Constants;
+﻿#nullable enable
+
+using Frotz.Constants;
 using Frotz.Generic;
 using Frotz.Other;
 using static Frotz.Constants.CharCodes;
@@ -7,6 +9,9 @@ using static Frotz.Constants.ZMachine;
 using static Frotz.Constants.ZStyles;
 using System;
 using System.Buffers;
+
+using System.Threading;
+using static TextIO;
 
 using zword = System.UInt16;
 
@@ -86,7 +91,12 @@ namespace Frotz
 
         private static void putchar(zword x)
         {
+#if true
+            TextIO.output += (char)x;
             Console.Out.Write((char)x);
+#else
+            Console.Out.Write((char)x);
+#endif
         }
 
         /* # ifdef USE_UTF8
@@ -1090,7 +1100,7 @@ namespace Frotz
          * Given a colour index, return the appropriate true colour.
          *
          */
-        public static zword ToTrueColor(int index) =>0;
+        public static zword ToTrueColor(int index) => 0;
 
     }
 }

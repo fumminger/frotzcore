@@ -1,4 +1,6 @@
-﻿using Frotz.Constants;
+﻿#nullable enable
+
+using Frotz.Constants;
 using Frotz.Other;
 
 using System;

@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  * Or visit http://www.fsf.org/
  */
+#nullable enable
+
 using Frotz.Constants;
 using Frotz.Generic;
 using static Frotz.Constants.CharCodes;
@@ -27,6 +29,9 @@ using static Frotz.Constants.ZMachine;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+
+using System.Threading;
+using static TextIO;
 
 using zword = System.UInt16;
 
@@ -95,6 +100,15 @@ namespace Frotz
         /* get a character.  Exit with no fuss on EOF.  */
         static ushort xgetchar()
         {
+#if true
+            int c = 0;
+            while (TextIO.input.Length == 0)
+            {
+                Thread.Sleep(10);
+            }
+            c = TextIO.input[0];
+            TextIO.input = TextIO.input.Remove(0, 1);
+#else
             int c = System.Console.Read();
             if (c == -1) // EOF
             {
@@ -106,7 +120,7 @@ namespace Frotz
                             }
                 */
                 /*
-                  #ifdef TOPS20
+//# ifdef TOPS20
                             // On TOPS-20 only, the very first getchar() may return EOF,
                             // even thought feof(stdin) is false.  No idea why, but...
                             //
@@ -119,11 +133,12 @@ namespace Frotz
                             {
                                 os_fatal(strerror(errno));
                             }
-                #else
+//#else
                 */
                 Fatal("End Of File");
                 //#endif
             }
+#endif
             return (ushort)c;
         }
 
@@ -622,7 +637,7 @@ namespace Frotz
 
             zword[] tempname;
             zword[] path_separator = new zword[2];
-            int i;
+            //int i;
 
             path_separator[0] = PATH_SEPARATOR;
             path_separator[1] = (char)0;
